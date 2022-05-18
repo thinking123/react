@@ -13,4 +13,5 @@ module.exports = Object.assign({}, baseConfig, {
     require.resolve('./setupTests.www.js'),
     require.resolve('./setupHostConfigs.js'),
   ],
+  testTimeout: 99999999
 });

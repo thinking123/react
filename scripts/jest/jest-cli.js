@@ -366,6 +366,8 @@ function main() {
     console.log(chalk.green('Open chrome://inspect and press "inspect"\n'));
   }
 
+  // console.log('=====args' , args)
+  // console.log('=====envars' , envars)
   // Run Jest.
   const jest = spawn('node', args, {
     stdio: 'inherit',
