@@ -31,7 +31,7 @@ import {clz32} from './clz32';
 // If those values are changed that package should be rebuilt and redeployed.
 
 export const TotalLanes = 31;
-
+                                                        // 前缀0b：二进制 表达式
 export const NoLanes: Lanes = /*                        */ 0b0000000000000000000000000000000;
 export const NoLane: Lane = /*                          */ 0b0000000000000000000000000000000;
 
@@ -198,8 +198,11 @@ export function getNextLanes(root: FiberRoot, wipLanes: Lanes): Lanes {
 
   // Do not work on any idle work until all the non-idle work has finished,
   // even if the work is suspended.
+  // NonIdleLanes == 0b0001111111111111111111111111111
   const nonIdlePendingLanes = pendingLanes & NonIdleLanes;
   if (nonIdlePendingLanes !== NoLanes) {
+    // nonIdlePendingLanes - suspendedLanes bits
+    // 不是空闲的非阻塞 lane
     const nonIdleUnblockedLanes = nonIdlePendingLanes & ~suspendedLanes;
     if (nonIdleUnblockedLanes !== NoLanes) {
       nextLanes = getHighestPriorityLanes(nonIdleUnblockedLanes);
@@ -385,7 +388,7 @@ function computeExpirationTime(lane: Lane, currentTime: number) {
       return NoTimestamp;
   }
 }
-
+// 计算 root 的 pendingLanes -> expiredLanes
 export function markStarvedLanesAsExpired(
   root: FiberRoot,
   currentTime: number,
@@ -408,7 +411,7 @@ export function markStarvedLanesAsExpired(
     const lane = 1 << index;
 
     const expirationTime = expirationTimes[index];
-    if (expirationTime === NoTimestamp) {
+    if (expirationTime === NoTimestamp) { // NoTimestamp === -1
       // Found a pending lane with no expiration time. If it's not suspended, or
       // if it's pinged, assume it's CPU-bound. Compute a new expiration time
       // using the current time.
@@ -423,7 +426,7 @@ export function markStarvedLanesAsExpired(
       // This lane expired
       root.expiredLanes |= lane;
     }
-
+    // 从 lanes 删除 lane bit
     lanes &= ~lane;
   }
 }
@@ -509,7 +512,8 @@ export function claimNextRetryLane(): Lane {
   }
   return lane;
 }
-
+// 返回 lane 最低 bit (0...0101) -> 0...0001
+//       bit (0...0110) -> 0...0010
 export function getHighestPriorityLane(lanes: Lanes): Lane {
   return lanes & -lanes;
 }
@@ -521,11 +525,15 @@ export function pickArbitraryLane(lanes: Lanes): Lane {
   // getHighestPriorityLane because it requires the fewest operations.
   return getHighestPriorityLane(lanes);
 }
-
+//返回 lanes bit 不是 0 的在32 bit 的 index
+//0b 0000...10  === index === 1
+//0b 0000....01 === index === 0
 function pickArbitraryLaneIndex(lanes: Lanes) {
+  // clz32 返回bit 的前缀 0 的 数量
+  //如果是 32 bit 0b00..1 ,clz32(1) == 31
   return 31 - clz32(lanes);
 }
-
+// 返回不是 0 的 index （32 bit）000111 , index === 2
 function laneToIndex(lane: Lane) {
   return pickArbitraryLaneIndex(lane);
 }
@@ -594,11 +602,12 @@ export function markRootUpdated(
     root.suspendedLanes = NoLanes;
     root.pingedLanes = NoLanes;
   }
-
+  // eventTimes = [0,0,...] length === 31
   const eventTimes = root.eventTimes;
   const index = laneToIndex(updateLane);
   // We can always overwrite an existing timestamp because we prefer the most
   // recent event, and we assume time is monotonically increasing.
+  // 设置当前lane index 对应的 时间戳
   eventTimes[index] = eventTime;
 }
 

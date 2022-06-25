@@ -440,7 +440,7 @@ export function getCurrentTime() {
 }
 
 export function requestUpdateLane(fiber: Fiber): Lane {
-  // Special cases
+  // Special cases ， mode === NoMode
   const mode = fiber.mode;
   if ((mode & ConcurrentMode) === NoMode) {
     return (SyncLane: Lane);
@@ -525,6 +525,7 @@ export function scheduleUpdateOnFiber(
   lane: Lane,
   eventTime: number,
 ): FiberRoot | null {
+  // check 循环更新
   checkForNestedUpdates();
 
   if (__DEV__) {
@@ -532,7 +533,7 @@ export function scheduleUpdateOnFiber(
       console.error('useInsertionEffect must not schedule updates.');
     }
   }
-
+  // 更新 lane 返回 FiberRoot
   const root = markUpdateLaneFromFiberToRoot(fiber, lane);
   if (root === null) {
     return null;
@@ -545,6 +546,7 @@ export function scheduleUpdateOnFiber(
   }
 
   // Mark that the root has a pending update.
+    // 设置当前lane index 对应的 时间戳 和 pendingLanes
   markRootUpdated(root, lane, eventTime);
 
   if (
@@ -567,7 +569,7 @@ export function scheduleUpdateOnFiber(
     // This is a normal update, scheduled from outside the render phase. For
     // example, during an input event.
     if (enableUpdaterTracking) {
-      if (isDevToolsPresent) {
+      if (isDevToolsPresent) {// false
         addFiberToLanesMap(root, fiber, lane);
       }
     }
@@ -594,7 +596,7 @@ export function scheduleUpdateOnFiber(
       }
     }
 
-    if (enableTransitionTracing) {
+    if (enableTransitionTracing) { // false
       const transition = ReactCurrentBatchConfig.transition;
       if (transition !== null) {
         if (transition.startTime === -1) {
@@ -604,7 +606,7 @@ export function scheduleUpdateOnFiber(
         addTransitionToLanesMap(root, transition, lane);
       }
     }
-
+    // init render workInProgressRoot === null
     if (root === workInProgressRoot) {
       // TODO: Consolidate with `isInterleavedUpdate` check
 
@@ -677,11 +679,13 @@ export function scheduleInitialHydrationOnRoot(
 // work without treating it as a typical update that originates from an event;
 // e.g. retrying a Suspense boundary isn't an update, but it does schedule work
 // on a fiber.
+// 更新 sourceFiber 的 parent 到fiberRoot 的 lane ，返回HostRoot
 function markUpdateLaneFromFiberToRoot(
   sourceFiber: Fiber,
   lane: Lane,
 ): FiberRoot | null {
   // Update the source fiber's lanes
+  // 设置 fiber lanes ： 合并lanes , SyncLane | NoLane
   sourceFiber.lanes = mergeLanes(sourceFiber.lanes, lane);
   let alternate = sourceFiber.alternate;
   if (alternate !== null) {
@@ -697,6 +701,7 @@ function markUpdateLaneFromFiberToRoot(
   }
   // Walk the parent path to the root and update the child lanes.
   let node = sourceFiber;
+  // return 是否 === parent fiber
   let parent = sourceFiber.return;
   while (parent !== null) {
     parent.childLanes = mergeLanes(parent.childLanes, lane);
@@ -713,6 +718,7 @@ function markUpdateLaneFromFiberToRoot(
     node = parent;
     parent = parent.return;
   }
+  // FiberNode (type = HostRoot) , Root(FiberRoot) 和 Root.current = HostRoot , HostRoot.stateNode ===  Root(FiberRoot)
   if (node.tag === HostRoot) {
     const root: FiberRoot = node.stateNode;
     return root;
@@ -753,6 +759,7 @@ function ensureRootIsScheduled(root: FiberRoot, currentTime: number) {
 
   // Check if any lanes are being starved by other work. If so, mark them as
   // expired so we know to work on those next.
+  // 计算 root 的 pendingLanes -> expiredLanes
   markStarvedLanesAsExpired(root, currentTime);
 
   // Determine the next lanes to work on, and their priority.
@@ -829,7 +836,7 @@ function ensureRootIsScheduled(root: FiberRoot, currentTime: number) {
         // at the end of the current scope even when using the sync version
         // of `act`.
         ReactCurrentActQueue.current.push(flushSyncCallbacks);
-      } else {
+      } else { //scheduleMicrotask === [ queueMicrotask , Promise , setTimeout] 执行任务 ，按照支持 api 使用
         scheduleMicrotask(() => {
           // In Safari, appending an iframe forces microtasks to run.
           // https://github.com/facebook/react/issues/22459
@@ -1508,7 +1515,7 @@ function prepareFreshStack(root: FiberRoot, lanes: Lanes): Fiber {
   root.finishedLanes = NoLanes;
 
   const timeoutHandle = root.timeoutHandle;
-  if (timeoutHandle !== noTimeout) {
+  if (timeoutHandle !== noTimeout) { // false
     // The root previous suspended and scheduled a timeout to commit a fallback
     // state. Now that we have additional work, cancel the timeout.
     root.timeoutHandle = noTimeout;
@@ -1527,8 +1534,9 @@ function prepareFreshStack(root: FiberRoot, lanes: Lanes): Fiber {
       );
       interruptedWork = interruptedWork.return;
     }
-  }
+  } // 设置 workInProgressRoot ， rootWorkInProgress todo
   workInProgressRoot = root;
+  // 返回root.alternate
   const rootWorkInProgress = createWorkInProgress(root.current, null);
   workInProgress = rootWorkInProgress;
   workInProgressRootRenderLanes = subtreeRenderLanes = workInProgressRootIncludedLanes = lanes;
@@ -1717,6 +1725,7 @@ export function renderHasNotSuspendedYet(): boolean {
 
 function renderRootSync(root: FiberRoot, lanes: Lanes) {
   const prevExecutionContext = executionContext;
+  // RenderContext === 0b010
   executionContext |= RenderContext;
   const prevDispatcher = pushDispatcher();
 
@@ -1795,7 +1804,7 @@ function renderRootSync(root: FiberRoot, lanes: Lanes) {
 /** @noinline */
 function workLoopSync() {
   // Already timed out, so perform work without checking if we need to yield.
-  while (workInProgress !== null) {
+  while (workInProgress !== null) { //workInProgress ===  FiberNode.alternate
     performUnitOfWork(workInProgress);
   }
 }
@@ -1896,7 +1905,7 @@ function performUnitOfWork(unitOfWork: Fiber): void {
   setCurrentDebugFiberInDEV(unitOfWork);
 
   let next;
-  if (enableProfilerTimer && (unitOfWork.mode & ProfileMode) !== NoMode) {
+  if (enableProfilerTimer && (unitOfWork.mode & ProfileMode) !== NoMode) {//false
     startProfilerTimer(unitOfWork);
     next = beginWork(current, unitOfWork, subtreeRenderLanes);
     stopProfilerTimerIfRunningAndRecordDelta(unitOfWork, true);
@@ -2990,13 +2999,14 @@ function warnAboutUpdateOnNotYetMountedFiberInDEV(fiber) {
 let beginWork;
 if (__DEV__ && replayFailedUnitOfWorkWithInvokeGuardedCallback) {
   const dummyFiber = null;
-  beginWork = (current, unitOfWork, lanes) => {
+  beginWork = (current, unitOfWork, lanes) => { // use this beginWork 调试
     // If a component throws an error, we replay it again in a synchronously
     // dispatched event, so that the debugger will treat it as an uncaught
     // error See ReactErrorUtils for more information.
 
     // Before entering the begin phase, copy the work-in-progress onto a dummy
     // fiber. If beginWork throws, we'll use this to reset the state.
+    // dev 模式，temp dummyFiber 保存  unitOfWork 属性，调试
     const originalWorkInProgressCopy = assignFiberPropertiesInDEV(
       dummyFiber,
       unitOfWork,

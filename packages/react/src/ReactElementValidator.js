@@ -411,6 +411,7 @@ export function jsxWithValidationDynamic(type, props, key) {
 }
 
 export function createElementWithValidation(type, props, children) {
+  // 校验 type 是否是function 或者 Fragment 等
   const validType = isValidElementType(type);
 
   // We warn in this case but don't throw. We expect the element creation to
@@ -458,7 +459,7 @@ export function createElementWithValidation(type, props, children) {
       );
     }
   }
-
+  // 设置 element = {props , type:REACT_ELEMENT_TYPE , key ,ref,等 } 属性
   const element = createElement.apply(this, arguments);
 
   // The result can be nullish if a mock or a custom function is used.

@@ -165,13 +165,15 @@ export function getRootHostContext(
           ? rootContainerInstance.parentNode
           : rootContainerInstance;
       const ownNamespace = container.namespaceURI || null;
-      type = container.tagName;
+      // namespaceURI === 'http://www.w3.org/1999/xhtml'
+      type = container.tagName; // tagName === "DIV"
       namespace = getChildNamespace(ownNamespace, type);
       break;
     }
   }
   if (__DEV__) {
     const validatedTag = type.toLowerCase();
+    // updatedAncestorInfo validateDOMNesting.js
     const ancestorInfo = updatedAncestorInfo(null, validatedTag);
     return {namespace, ancestorInfo};
   }

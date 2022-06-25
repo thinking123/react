@@ -157,7 +157,7 @@ function pushTopLevelContextObject(
   context: Object,
   didChange: boolean,
 ): void {
-  if (disableLegacyContext) {
+  if (disableLegacyContext) { // false
     return;
   } else {
     if (contextStackCursor.current !== emptyContextObject) {

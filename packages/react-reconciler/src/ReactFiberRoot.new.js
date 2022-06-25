@@ -56,8 +56,8 @@ function FiberRootNode(
   identifierPrefix,
   onRecoverableError,
 ) {
-  this.tag = tag;
-  this.containerInfo = containerInfo;
+  this.tag = tag; // LegacyRoot
+  this.containerInfo = containerInfo; // id="root" html
   this.pendingChildren = null;
   this.current = null;
   this.pingCache = null;
@@ -131,7 +131,7 @@ function FiberRootNode(
 
 export function createFiberRoot(
   containerInfo: any,
-  tag: RootTag,
+  tag: RootTag,// LegacyRoot
   hydrate: boolean,
   initialChildren: ReactNodeList,
   hydrationCallbacks: null | SuspenseHydrationCallbacks,
@@ -144,7 +144,7 @@ export function createFiberRoot(
   identifierPrefix: string,
   onRecoverableError: null | ((error: mixed) => void),
   transitionCallbacks: null | TransitionTracingCallbacks,
-): FiberRoot {
+): FiberRoot { // 创建Fiber Root
   const root: FiberRoot = (new FiberRootNode(
     containerInfo,
     tag,
@@ -161,12 +161,12 @@ export function createFiberRoot(
   }
 
   // Cyclic construction. This cheats the type system right now because
-  // stateNode is any.
+  // stateNode is any. 创建Host Fiber ：FiberNode (type = HostRoot)
   const uninitializedFiber = createHostRootFiber(
     tag,
     isStrictMode,
     concurrentUpdatesByDefaultOverride,
-  );
+  );//root.current -> HostRoot.stateNode -> root
   root.current = uninitializedFiber;
   uninitializedFiber.stateNode = root;
 
@@ -201,7 +201,7 @@ export function createFiberRoot(
     };
     uninitializedFiber.memoizedState = initialState;
   }
-
+  // 插入 updateQueue 到 uninitializedFiber
   initializeUpdateQueue(uninitializedFiber);
 
   return root;

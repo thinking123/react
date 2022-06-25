@@ -146,6 +146,7 @@ function warnIfStringRefCannotBeAutoConverted(config) {
  * @internal
  */
 const ReactElement = function(type, key, ref, self, source, owner, props) {
+  // 构建 组件 porps type key ref 等
   const element = {
     // This tag allows us to uniquely identify this as a React Element
     $$typeof: REACT_ELEMENT_TYPE,
@@ -370,14 +371,14 @@ export function createElement(type, config, children) {
   let self = null;
   let source = null;
 
-  if (config != null) {
+  if (config != null) { // ref 是否有效 ref !== undefined
     if (hasValidRef(config)) {
       ref = config.ref;
 
       if (__DEV__) {
         warnIfStringRefCannotBeAutoConverted(config);
       }
-    }
+    }// key 是否有效 key !== undefined
     if (hasValidKey(config)) {
       if (__DEV__) {
         checkKeyStringCoercion(config.key);
@@ -386,6 +387,7 @@ export function createElement(type, config, children) {
     }
 
     self = config.__self === undefined ? null : config.__self;
+    // source = {fileName: 组件的文件名称,lineNumber,columnNumber}
     source = config.__source === undefined ? null : config.__source;
     // Remaining properties are added to a new props object
     for (propName in config) {
@@ -416,7 +418,7 @@ export function createElement(type, config, children) {
     props.children = childArray;
   }
 
-  // Resolve default props
+  // Resolve default props , 设置 defaultProps 默认值
   if (type && type.defaultProps) {
     const defaultProps = type.defaultProps;
     for (propName in defaultProps) {
@@ -431,7 +433,7 @@ export function createElement(type, config, children) {
         typeof type === 'function'
           ? type.displayName || type.name || 'Unknown'
           : type;
-      if (key) {
+      if (key) { // 定义 key 和 ref warning
         defineKeyPropWarningGetter(props, displayName);
       }
       if (ref) {

@@ -91,7 +91,7 @@ export function createEventListenerWrapperWithPriority(
   const eventPriority = getEventPriority(domEventName);
   let listenerWrapper;
   switch (eventPriority) {
-    case DiscreteEventPriority:
+    case DiscreteEventPriority: // click event
       listenerWrapper = dispatchDiscreteEvent;
       break;
     case ContinuousEventPriority:
@@ -361,7 +361,7 @@ export function findInstanceBlockingEvent(
   // TODO: Warn if _enabled is false.
 
   return_targetInst = null;
-
+  // 获取 event 的 target
   const nativeEventTarget = getEventTarget(nativeEvent);
   let targetInst = getClosestInstanceFromNode(nativeEventTarget);
 

@@ -122,7 +122,7 @@ function FiberNode(
   mode: TypeOfMode,
 ) {
   // Instance
-  this.tag = tag;
+  this.tag = tag; // HostRoot
   this.key = key;
   this.elementType = null;
   this.type = null;
@@ -142,7 +142,7 @@ function FiberNode(
   this.memoizedState = null;
   this.dependencies = null;
 
-  this.mode = mode;
+  this.mode = mode;// mode = NoMode
 
   // Effects
   this.flags = NoFlags;
@@ -207,11 +207,11 @@ function FiberNode(
 //    is faster.
 // 5) It should be easy to port this to a C struct and keep a C implementation
 //    compatible.
-const createFiber = function(
-  tag: WorkTag,
+const createFiber = function( // 用function 返回 new FiberNode
+  tag: WorkTag, // HostRoot
   pendingProps: mixed,
   key: null | string,
-  mode: TypeOfMode,
+  mode: TypeOfMode, // mode = NoMode
 ): Fiber {
   // $FlowFixMe: the shapes are exact here but Flow doesn't like constructors
   return new FiberNode(tag, pendingProps, key, mode);
@@ -246,8 +246,9 @@ export function resolveLazyComponentTag(Component: Function): WorkTag {
 }
 
 // This is used to create an alternate fiber to do work on.
+// 创建 alternate 或者 reset alternate 返回
 export function createWorkInProgress(current: Fiber, pendingProps: any): Fiber {
-  let workInProgress = current.alternate;
+  let workInProgress = current.alternate; // 双缓冲
   if (workInProgress === null) {
     // We use a double buffering pooling technique because we know that we'll
     // only ever need at most two versions of a tree. We pool the "other" unused
@@ -262,7 +263,7 @@ export function createWorkInProgress(current: Fiber, pendingProps: any): Fiber {
     );
     workInProgress.elementType = current.elementType;
     workInProgress.type = current.type;
-    workInProgress.stateNode = current.stateNode;
+    workInProgress.stateNode = current.stateNode; // FiberRootNode or ...
 
     if (__DEV__) {
       // DEV-only fields
@@ -271,7 +272,7 @@ export function createWorkInProgress(current: Fiber, pendingProps: any): Fiber {
       workInProgress._debugOwner = current._debugOwner;
       workInProgress._debugHookTypes = current._debugHookTypes;
     }
-
+    // 双缓冲 循环 point
     workInProgress.alternate = current;
     current.alternate = workInProgress;
   } else {
@@ -430,7 +431,7 @@ export function createHostRootFiber(
   isStrictMode: boolean,
   concurrentUpdatesByDefaultOverride: null | boolean,
 ): Fiber {
-  let mode;
+  let mode; // tag === LegacyRoot
   if (tag === ConcurrentRoot) {
     mode = ConcurrentMode;
     if (isStrictMode === true) {
@@ -461,7 +462,7 @@ export function createHostRootFiber(
     // Without some nodes in the tree having empty base times.
     mode |= ProfileMode;
   }
-
+  // mode = NoMode
   return createFiber(HostRoot, null, null, mode);
 }
 

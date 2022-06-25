@@ -257,7 +257,7 @@ export function createContainer(
   const initialChildren = null;
   return createFiberRoot(
     containerInfo,
-    tag,
+    tag, // LegacyRoot
     hydrate,
     initialChildren,
     hydrationCallbacks,
@@ -318,22 +318,24 @@ export function createHydrationContainer(
 }
 
 export function updateContainer(
-  element: ReactNodeList,
-  container: OpaqueRoot,
+  element: ReactNodeList, // {props, ...}
+  container: OpaqueRoot, // FiberRoot
   parentComponent: ?React$Component<any, any>,
   callback: ?Function,
 ): Lane {
   if (__DEV__) {
     onScheduleRoot(container, element);
-  }
+  } // FiberNode (type = HostRoot)
   const current = container.current;
+  // 返回 performance.now 时间戳
   const eventTime = requestEventTime();
+  // tag === NoMode ， lane === SyncLane
   const lane = requestUpdateLane(current);
 
-  if (enableSchedulingProfiler) {
+  if (enableSchedulingProfiler) { // disabled 属性
     markRenderScheduled(lane);
   }
-
+  // parentComponent === undefined ，返回 {}
   const context = getContextForSubtree(parentComponent);
   if (container.context === null) {
     container.context = context;
@@ -357,11 +359,11 @@ export function updateContainer(
       );
     }
   }
-
+  // 创建update {tag: UpdateState }
   const update = createUpdate(eventTime, lane);
   // Caution: React DevTools currently depends on this property
   // being called "element".
-  update.payload = {element};
+  update.payload = {element}; // element === render(<App/> ) App {}
 
   callback = callback === undefined ? null : callback;
   if (callback !== null) {
@@ -376,7 +378,7 @@ export function updateContainer(
     }
     update.callback = callback;
   }
-
+  // 连接 update to current
   enqueueUpdate(current, update, lane);
   const root = scheduleUpdateOnFiber(current, lane, eventTime);
   if (root !== null) {

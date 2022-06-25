@@ -1275,7 +1275,7 @@ function updateHostRoot(current, workInProgress, renderLanes) {
   if (current === null) {
     throw new Error('Should have a current fiber. This is a bug in React.');
   }
-
+// todo
   const nextProps = workInProgress.pendingProps;
   const prevState = workInProgress.memoizedState;
   const prevChildren = prevState.element;
@@ -3696,7 +3696,7 @@ function beginWork(
   renderLanes: Lanes,
 ): Fiber | null {
   if (__DEV__) {
-    if (workInProgress._debugNeedsRemount && current !== null) {
+    if (workInProgress._debugNeedsRemount && current !== null) {// false
       // This will restart the begin phase with a new fiber.
       return remountFiber(
         current,
@@ -3717,7 +3717,7 @@ function beginWork(
     const oldProps = current.memoizedProps;
     const newProps = workInProgress.pendingProps;
 
-    if (
+    if ( // false
       oldProps !== newProps ||
       hasLegacyContextChanged() ||
       // Force a re-render if the implementation changed due to hot reload:
@@ -3733,7 +3733,7 @@ function beginWork(
         current,
         renderLanes,
       );
-      if (
+      if ( // false
         !hasScheduledUpdateOrContext &&
         // If this is the second pass of an error or suspense boundary, there
         // may not be work scheduled on `current`, so we check for this flag.
@@ -3784,7 +3784,7 @@ function beginWork(
   // sometimes bails out later in the begin phase. This indicates that we should
   // move this assignment out of the common path and into each branch.
   workInProgress.lanes = NoLanes;
-
+  // tag === HostRoot === 3
   switch (workInProgress.tag) {
     case IndeterminateComponent: {
       return mountIndeterminateComponent(

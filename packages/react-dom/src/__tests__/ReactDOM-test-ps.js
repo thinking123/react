@@ -6,6 +6,7 @@
  *
  * @emails react-core
  */
+//Open chrome://inspect and press "inspect"
 
 'use strict';
 

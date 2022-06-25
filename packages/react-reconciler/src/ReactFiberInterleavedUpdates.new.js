@@ -31,14 +31,14 @@ export function pushInterleavedQueue(
 export function hasInterleavedUpdates() {
   return interleavedQueues !== null;
 }
-
+// 入队 交错(Interleaved) 更新
 export function enqueueInterleavedUpdates() {
   // Transfer the interleaved updates onto the main queue. Each queue has a
   // `pending` field and an `interleaved` field. When they are not null, they
   // point to the last node in a circular linked list. We need to append the
   // interleaved list to the end of the pending list by joining them into a
   // single, circular list.
-  if (interleavedQueues !== null) {
+  if (interleavedQueues !== null) { // null
     for (let i = 0; i < interleavedQueues.length; i++) {
       const queue = interleavedQueues[i];
       const lastInterleavedUpdate = queue.interleaved;

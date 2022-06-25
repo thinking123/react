@@ -109,13 +109,13 @@ function noopOnRecoverableError() {
 }
 
 function legacyCreateRootFromDOMContainer(
-  container: Container,
-  initialChildren: ReactNodeList,
-  parentComponent: ?React$Component<any, any>,
+  container: Container, // root div html
+  initialChildren: ReactNodeList, // {props , type , key , ref , ....}
+  parentComponent: ?React$Component<any, any>, // init render null
   callback: ?Function,
-  isHydrationContainer: boolean,
+  isHydrationContainer: boolean, // ssr
 ): FiberRoot {
-  if (isHydrationContainer) {
+  if (isHydrationContainer) { //ssr render 使用
     if (typeof callback === 'function') {
       const originalCallback = callback;
       callback = function() {
@@ -160,7 +160,7 @@ function legacyCreateRootFromDOMContainer(
         originalCallback.call(instance);
       };
     }
-
+    // reconciler 创建Root(FiberRoot) 和 Root.current = uninitializedFiber(FiberNode (type = HostRoot))
     const root = createContainer(
       container,
       LegacyRoot,
@@ -172,10 +172,13 @@ function legacyCreateRootFromDOMContainer(
       null, // transitionCallbacks
     );
     container._reactRootContainer = root;
+    // 在 react interal key 保存 fiberNode
+    // container 是html root,  container[react interal key] = fiberNode
     markContainerAsRoot(root.current, container);
-
+     // 从 html root 获取 不是comments 的 container
     const rootContainerElement =
       container.nodeType === COMMENT_NODE ? container.parentNode : container;
+      // 绑定所有的 html event
     listenToAllSupportedEvents(rootContainerElement);
 
     // Initial mount should not be batched.
@@ -201,10 +204,10 @@ function warnOnInvalidCallback(callback: mixed, callerName: string): void {
 }
 
 function legacyRenderSubtreeIntoContainer(
-  parentComponent: ?React$Component<any, any>,
-  children: ReactNodeList,
-  container: Container,
-  forceHydrate: boolean,
+  parentComponent: ?React$Component<any, any>, // null
+  children: ReactNodeList, // <App/>
+  container: Container, // root
+  forceHydrate: boolean, // false , ssr === false
   callback: ?Function,
 ) {
   if (__DEV__) {
@@ -212,7 +215,7 @@ function legacyRenderSubtreeIntoContainer(
     warnOnInvalidCallback(callback === undefined ? null : callback, 'render');
   }
 
-  const maybeRoot = container._reactRootContainer;
+  const maybeRoot = container._reactRootContainer; // null
   let root: FiberRoot;
   if (!maybeRoot) {
     // Initial mount
@@ -311,8 +314,8 @@ export function hydrate(
 }
 
 export function render(
-  element: React$Element<any>,
-  container: Container,
+  element: React$Element<any>, // root App 组件 typeof === function
+  container: Container, // id="root" html 容器 ，ReactDom.render(<App/>,root)
   callback: ?Function,
 ) {
   if (__DEV__) {

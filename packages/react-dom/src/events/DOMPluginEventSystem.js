@@ -325,7 +325,7 @@ export function listenToNonDelegatedEvent(
 
 export function listenToNativeEvent(
   domEventName: DOMEventName,
-  isCapturePhaseListener: boolean,
+  isCapturePhaseListener: boolean, // 是否在 capture 的时候执行 callback
   target: EventTarget,
 ): void {
   if (__DEV__) {
@@ -382,8 +382,9 @@ const listeningMarker =
   Math.random()
     .toString(36)
     .slice(2);
-
+// 用顶层容器监听 event ,或者 document(selectionchange)
 export function listenToAllSupportedEvents(rootContainerElement: EventTarget) {
+  // rootContainerElement 绑定 html event ， listeningMarker 是否已经绑定
   if (!(rootContainerElement: any)[listeningMarker]) {
     (rootContainerElement: any)[listeningMarker] = true;
     allNativeEvents.forEach(domEventName => {
@@ -396,6 +397,9 @@ export function listenToAllSupportedEvents(rootContainerElement: EventTarget) {
         listenToNativeEvent(domEventName, true, rootContainerElement);
       }
     });
+    // nodeType html node 类型，
+    // ownerDocument 返回 顶层document 如果是 document 返回null
+    // 设置 顶层document selectionchange event
     const ownerDocument =
       (rootContainerElement: any).nodeType === DOCUMENT_NODE
         ? rootContainerElement
@@ -417,7 +421,7 @@ function addTrappedEventListener(
   eventSystemFlags: EventSystemFlags,
   isCapturePhaseListener: boolean,
   isDeferredListenerForLegacyFBSupport?: boolean,
-) {
+) { // 获取 domEventName 事件优先级
   let listener = createEventListenerWrapperWithPriority(
     targetContainer,
     domEventName,
@@ -437,11 +441,11 @@ function addTrappedEventListener(
       domEventName === 'touchstart' ||
       domEventName === 'touchmove' ||
       domEventName === 'wheel'
-    ) {
+    ) { // 滚动线程不会被阻塞
       isPassiveListener = true;
     }
   }
-
+ // false ? targetContainer , isDeferredListenerForLegacyFBSupport === false
   targetContainer =
     enableLegacyFBSupport && isDeferredListenerForLegacyFBSupport
       ? (targetContainer: any).ownerDocument
@@ -495,7 +499,7 @@ function addTrappedEventListener(
         listener,
         isPassiveListener,
       );
-    } else {
+    } else { // 在 targetContainer 添加event
       unsubscribeListener = addEventBubbleListener(
         targetContainer,
         domEventName,

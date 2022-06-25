@@ -214,7 +214,7 @@ export function enqueueUpdate<State>(
   fiber: Fiber,
   update: Update<State>,
   lane: Lane,
-) {
+) { // updateQueue === initializeUpdateQueue()
   const updateQueue = fiber.updateQueue;
   if (updateQueue === null) {
     // Only occurs if the fiber has been unmounted.
@@ -222,7 +222,7 @@ export function enqueueUpdate<State>(
   }
 
   const sharedQueue: SharedQueue<State> = (updateQueue: any).shared;
-
+  // 是否交错更新 ， false
   if (isInterleavedUpdate(fiber, lane)) {
     const interleaved = sharedQueue.interleaved;
     if (interleaved === null) {
@@ -245,6 +245,7 @@ export function enqueueUpdate<State>(
       update.next = pending.next;
       pending.next = update;
     }
+    // fiber.updateQueue.shared.pending = update.payload = {element}
     sharedQueue.pending = update;
   }
 

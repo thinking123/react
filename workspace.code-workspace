@@ -1,0 +1,19 @@
+{
+	"folders": [
+		{
+			"path": "."
+		},
+		{
+			"path": "../apollo-client-master"
+		},
+		{
+			"path": "../zstack/local-test"
+		},
+		{
+			"path": "../webpack-main"
+		},
+		{
+			"path": "../ts-loader-main 2"
+		}
+	]
+}

@@ -57,6 +57,15 @@ function pushHostContainer(fiber: Fiber, nextRootInstance: Container) {
   // whether getRootHostContext() throws somewhere in renderer code or not.
   // So we push an empty value first. This lets us safely unwind on errors.
   push(contextStackCursor, NO_CONTEXT, fiber);
+  /*
+nextRootContext = {
+namespace:'http://www.w3.org/1999/xhtml',
+ancestorInfo:{
+  current:{tab:'div'},
+  ...
+}
+}
+  */
   const nextRootContext = getRootHostContext(nextRootInstance);
   // Now that we know this function doesn't throw, replace it.
   pop(contextStackCursor, fiber);
