@@ -31,7 +31,7 @@ import {clz32} from './clz32';
 // If those values are changed that package should be rebuilt and redeployed.
 
 export const TotalLanes = 31;
-                                                        // 前缀0b：二进制 表达式
+                                                        // 前缀0b：31 长度 二进制 表达式
 export const NoLanes: Lanes = /*                        */ 0b0000000000000000000000000000000;
 export const NoLane: Lane = /*                          */ 0b0000000000000000000000000000000;
 
@@ -533,7 +533,7 @@ function pickArbitraryLaneIndex(lanes: Lanes) {
   //如果是 32 bit 0b00..1 ,clz32(1) == 31
   return 31 - clz32(lanes);
 }
-// 返回不是 0 的 index （32 bit）000111 , index === 2
+// 返回不是 0 最大的的 index （32 bit）000111 , index === 2
 function laneToIndex(lane: Lane) {
   return pickArbitraryLaneIndex(lane);
 }
@@ -598,7 +598,7 @@ export function markRootUpdated(
   // We don't do this if the incoming update is idle, because we never process
   // idle updates until after all the regular updates have finished; there's no
   // way it could unblock a transition.
-  if (updateLane !== IdleLane) {
+  if (updateLane !== IdleLane) { // IdleLane === 0b010...
     root.suspendedLanes = NoLanes;
     root.pingedLanes = NoLanes;
   }

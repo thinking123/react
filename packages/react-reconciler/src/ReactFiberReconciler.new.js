@@ -246,16 +246,16 @@ function findHostInstanceWithWarning(
 export function createContainer(
   containerInfo: Container,
   tag: RootTag,
-  hydrationCallbacks: null | SuspenseHydrationCallbacks,
-  isStrictMode: boolean,
-  concurrentUpdatesByDefaultOverride: null | boolean,
-  identifierPrefix: string,
-  onRecoverableError: (error: mixed) => void,
-  transitionCallbacks: null | TransitionTracingCallbacks,
+  hydrationCallbacks: null | SuspenseHydrationCallbacks, // null
+  isStrictMode: boolean, // false
+  concurrentUpdatesByDefaultOverride: null | boolean, // false
+  identifierPrefix: string, // ''
+  onRecoverableError: (error: mixed) => void, // () => {}
+  transitionCallbacks: null | TransitionTracingCallbacks, // null
 ): OpaqueRoot {
   const hydrate = false;
   const initialChildren = null;
-  return createFiberRoot(
+  return createFiberRoot( // 返回 root = FiberRootNode , root.uninitializedFiber = FiberNode (type = HostRoot) ,  uninitializedFiber.updateQueue = {baseState , ... }
     containerInfo,
     tag, // LegacyRoot
     hydrate,
@@ -330,13 +330,13 @@ export function updateContainer(
   // 返回 performance.now 时间戳
   const eventTime = requestEventTime();
   // tag === NoMode ， lane === SyncLane
-  const lane = requestUpdateLane(current);
+  const lane = requestUpdateLane(current); // SyncLane (1)
 
-  if (enableSchedulingProfiler) { // disabled 属性
+  if (enableSchedulingProfiler) { // true , disabled 属性
     markRenderScheduled(lane);
   }
   // parentComponent === undefined ，返回 {}
-  const context = getContextForSubtree(parentComponent);
+  const context = getContextForSubtree(parentComponent);// init null , context={}
   if (container.context === null) {
     container.context = context;
   } else {
@@ -345,7 +345,7 @@ export function updateContainer(
 
   if (__DEV__) {
     if (
-      ReactCurrentFiberIsRendering &&
+      ReactCurrentFiberIsRendering && // false
       ReactCurrentFiberCurrent !== null &&
       !didWarnAboutNestedUpdates
     ) {
@@ -360,12 +360,24 @@ export function updateContainer(
     }
   }
   // 创建update {tag: UpdateState }
+  /*
+  const update: Update<*> = {
+    eventTime,
+    lane,
+
+    tag: UpdateState, // 0
+    payload: null,
+    callback: null,
+
+    next: null,
+  };
+  */
   const update = createUpdate(eventTime, lane);
   // Caution: React DevTools currently depends on this property
   // being called "element".
   update.payload = {element}; // element === render(<App/> ) App {}
 
-  callback = callback === undefined ? null : callback;
+  callback = callback === undefined ? null : callback; // callback === undefined
   if (callback !== null) {
     if (__DEV__) {
       if (typeof callback !== 'function') {
@@ -379,7 +391,7 @@ export function updateContainer(
     update.callback = callback;
   }
   // 连接 update to current
-  enqueueUpdate(current, update, lane);
+  enqueueUpdate(current, update, lane); // HostRoot Fiber
   const root = scheduleUpdateOnFiber(current, lane, eventTime);
   if (root !== null) {
     entangleTransitions(root, current, lane);

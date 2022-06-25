@@ -90,7 +90,7 @@ function getSourceInfoErrorAddendumForProps(elementProps) {
  * updates.
  */
 const ownerHasKeyUseWarning = {};
-
+// Addendum: 附录
 function getCurrentComponentErrorInfo(parentType) {
   let info = getDeclarationErrorAddendum();
 
@@ -181,7 +181,7 @@ function validateChildKeys(node, parentType) {
     if (node._store) {
       node._store.validated = true;
     }
-  } else if (node) {
+  } else if (node) { // 可以迭代的 node
     const iteratorFn = getIteratorFn(node);
     if (typeof iteratorFn === 'function') {
       // Entry iterators used to provide implicit keys,
@@ -459,7 +459,7 @@ export function createElementWithValidation(type, props, children) {
       );
     }
   }
-  // 设置 element = {props , type:REACT_ELEMENT_TYPE , key ,ref,等 } 属性
+  // 设置 element = {props , type:App function , key ,ref,$$typeof :REACT_ELEMENT_TYPE 等 } 属性
   const element = createElement.apply(this, arguments);
 
   // The result can be nullish if a mock or a custom function is used.

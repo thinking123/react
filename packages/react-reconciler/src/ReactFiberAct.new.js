@@ -22,7 +22,7 @@ export function isLegacyActEnvironment(fiber: Fiber) {
     // spurious warnings by setting IS_REACT_ACT_ENVIRONMENT explicitly
     // to false.
 
-    const isReactActEnvironmentGlobal =
+    const isReactActEnvironmentGlobal = // undefined
       // $FlowExpectedError – Flow doesn't know about IS_REACT_ACT_ENVIRONMENT global
       typeof IS_REACT_ACT_ENVIRONMENT !== 'undefined'
         ? IS_REACT_ACT_ENVIRONMENT

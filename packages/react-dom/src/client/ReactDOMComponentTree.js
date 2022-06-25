@@ -60,6 +60,7 @@ export function precacheFiberNode(
 }
 
 export function markContainerAsRoot(hostRoot: Fiber, node: Container): void {
+  // container[key] === FiberNode (type = HostRoot)
   node[internalContainerInstanceKey] = hostRoot;
 }
 

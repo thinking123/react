@@ -467,7 +467,7 @@ export function getEventPriority(domEventName: DOMEventName): * {
     case 'popstate':
     case 'select':
     case 'selectstart':
-      return DiscreteEventPriority;
+      return DiscreteEventPriority; // 1
     case 'drag':
     case 'dragenter':
     case 'dragexit':
@@ -489,7 +489,7 @@ export function getEventPriority(domEventName: DOMEventName): * {
     case 'mouseleave':
     case 'pointerenter':
     case 'pointerleave':
-      return ContinuousEventPriority;
+      return ContinuousEventPriority; // 4
     case 'message': {
       // We might be in the Scheduler callback.
       // Eventually this mechanism will be replaced by a check
@@ -511,6 +511,6 @@ export function getEventPriority(domEventName: DOMEventName): * {
       }
     }
     default:
-      return DefaultEventPriority;
+      return DefaultEventPriority; // 16
   }
 }

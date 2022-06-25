@@ -344,9 +344,9 @@ export function isValidContainer(node: any): boolean {
 export function isValidContainerLegacy(node: any): boolean {
   return !!(
     node &&
-    (node.nodeType === ELEMENT_NODE ||
-      node.nodeType === DOCUMENT_NODE ||
-      node.nodeType === DOCUMENT_FRAGMENT_NODE ||
+    (node.nodeType === ELEMENT_NODE || // div or p
+      node.nodeType === DOCUMENT_NODE || // document
+      node.nodeType === DOCUMENT_FRAGMENT_NODE || //
       (node.nodeType === COMMENT_NODE &&
         (node: any).nodeValue === ' react-mount-point-unstable '))
   );

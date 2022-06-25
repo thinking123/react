@@ -420,7 +420,7 @@ function addTrappedEventListener(
   domEventName: DOMEventName,
   eventSystemFlags: EventSystemFlags,
   isCapturePhaseListener: boolean,
-  isDeferredListenerForLegacyFBSupport?: boolean,
+  isDeferredListenerForLegacyFBSupport?: boolean, // false
 ) { // 获取 domEventName 事件优先级
   let listener = createEventListenerWrapperWithPriority(
     targetContainer,
@@ -430,7 +430,7 @@ function addTrappedEventListener(
   // If passive option is not supported, then the event will be
   // active and not passive.
   let isPassiveListener = undefined;
-  if (passiveBrowserEventsSupported) {
+  if (passiveBrowserEventsSupported) {// true
     // Browsers introduced an intervention, making these events
     // passive by default on document. React doesn't bind them
     // to document anymore, but changing this now would undo
@@ -446,7 +446,7 @@ function addTrappedEventListener(
     }
   }
  // false ? targetContainer , isDeferredListenerForLegacyFBSupport === false
-  targetContainer =
+  targetContainer = // enableLegacyFBSupport true
     enableLegacyFBSupport && isDeferredListenerForLegacyFBSupport
       ? (targetContainer: any).ownerDocument
       : targetContainer;

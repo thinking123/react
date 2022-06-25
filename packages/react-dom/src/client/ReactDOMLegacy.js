@@ -46,6 +46,7 @@ let topLevelUpdateWarnings;
 
 if (__DEV__) {
   topLevelUpdateWarnings = (container: Container) => {
+    // _reactRootContainer === FiberRoot, root
     if (container._reactRootContainer && container.nodeType !== COMMENT_NODE) {
       const hostInstance = findHostInstanceWithNoPortals(
         container._reactRootContainer.current,
@@ -138,6 +139,7 @@ function legacyCreateRootFromDOMContainer(
       null,
     );
     container._reactRootContainer = root;
+    // root.current === uninitializedFiber , FiberNode (type = HostRoot)
     markContainerAsRoot(root.current, container);
 
     const rootContainerElement =
@@ -148,6 +150,7 @@ function legacyCreateRootFromDOMContainer(
     return root;
   } else {
     // First clear any existing content.
+    // 删除 container 下的所有 content
     let rootSibling;
     while ((rootSibling = container.lastChild)) {
       container.removeChild(rootSibling);
@@ -160,7 +163,7 @@ function legacyCreateRootFromDOMContainer(
         originalCallback.call(instance);
       };
     }
-    // reconciler 创建Root(FiberRoot) 和 Root.current = uninitializedFiber(FiberNode (type = HostRoot))
+    // reconciler（调和器） 创建Root(FiberRoot) 和 Root.current = uninitializedFiber(FiberNode (type = HostRoot))
     const root = createContainer(
       container,
       LegacyRoot,
@@ -211,7 +214,9 @@ function legacyRenderSubtreeIntoContainer(
   callback: ?Function,
 ) {
   if (__DEV__) {
+    // 校验 container 的类型
     topLevelUpdateWarnings(container);
+    // callback 是否是 function
     warnOnInvalidCallback(callback === undefined ? null : callback, 'render');
   }
 
@@ -312,7 +317,7 @@ export function hydrate(
     callback,
   );
 }
-
+// ReactDOM.render(<APP/>, root = <div id="root"/> , callback = () => {})
 export function render(
   element: React$Element<any>, // root App 组件 typeof === function
   container: Container, // id="root" html 容器 ，ReactDom.render(<App/>,root)
@@ -326,12 +331,12 @@ export function render(
         'more: https://reactjs.org/link/switch-to-createroot',
     );
   }
-
+  // container 是否是 div p document 等
   if (!isValidContainerLegacy(container)) {
     throw new Error('Target container is not a DOM element.');
   }
 
-  if (__DEV__) {
+  if (__DEV__) { // 是否 container 已经 hook 了react dom
     const isModernRoot =
       isContainerMarkedAsRoot(container) &&
       container._reactRootContainer === undefined;

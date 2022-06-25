@@ -164,7 +164,7 @@ if (__DEV__) {
 
 export function initializeUpdateQueue<State>(fiber: Fiber): void {
   const queue: UpdateQueue<State> = {
-    baseState: fiber.memoizedState,
+    baseState: fiber.memoizedState, // {element,isDehydrated,cache,transitions,...}
     firstBaseUpdate: null,
     lastBaseUpdate: null,
     shared: {
@@ -201,7 +201,7 @@ export function createUpdate(eventTime: number, lane: Lane): Update<*> {
     eventTime,
     lane,
 
-    tag: UpdateState,
+    tag: UpdateState, // 0
     payload: null,
     callback: null,
 
@@ -215,6 +215,19 @@ export function enqueueUpdate<State>(
   update: Update<State>,
   lane: Lane,
 ) { // updateQueue === initializeUpdateQueue()
+  /*
+    uninitializedFiber.updateQueue = {
+      baseState: fiber.memoizedState, // {element,isDehydrated,cache,transitions,...}
+      firstBaseUpdate: null,
+      lastBaseUpdate: null,
+      shared: {
+        pending: null,
+        interleaved: null,
+        lanes: NoLanes,
+      },
+      effects: null,
+    }
+  */
   const updateQueue = fiber.updateQueue;
   if (updateQueue === null) {
     // Only occurs if the fiber has been unmounted.
@@ -250,7 +263,7 @@ export function enqueueUpdate<State>(
   }
 
   if (__DEV__) {
-    if (
+    if ( // false
       currentlyProcessingQueue === sharedQueue &&
       !didWarnUpdateInsideUpdate
     ) {

@@ -399,6 +399,7 @@ let pendingPassiveTransitions: Array<Transition> | null = null;
 
 // Use these to prevent an infinite loop of nested updates
 const NESTED_UPDATE_LIMIT = 50;
+// 循环更新
 let nestedUpdateCount: number = 0;
 let rootWithNestedUpdates: FiberRoot | null = null;
 let isFlushingPassiveEffects = false;
@@ -421,6 +422,7 @@ export function getWorkInProgressRoot(): FiberRoot | null {
 }
 
 export function requestEventTime() {
+  // executionContext 在 flushSync 设置 ,init === BatchedContext 0b001
   if ((executionContext & (RenderContext | CommitContext)) !== NoContext) {
     // We're inside React, so it's fine to read the actual time.
     return now();
@@ -436,14 +438,16 @@ export function requestEventTime() {
 }
 
 export function getCurrentTime() {
+  // performance.now() 时间戳
   return now();
 }
 
 export function requestUpdateLane(fiber: Fiber): Lane {
   // Special cases ， mode === NoMode
+  // fiber root : mode = NoMode , tag === HostRoot (3)
   const mode = fiber.mode;
   if ((mode & ConcurrentMode) === NoMode) {
-    return (SyncLane: Lane);
+    return (SyncLane: Lane); // 1
   } else if (
     !deferRenderPhaseUpdateToNextBatch &&
     (executionContext & RenderContext) !== NoContext &&
@@ -529,7 +533,7 @@ export function scheduleUpdateOnFiber(
   checkForNestedUpdates();
 
   if (__DEV__) {
-    if (isRunningInsertionEffect) {
+    if (isRunningInsertionEffect) { // false
       console.error('useInsertionEffect must not schedule updates.');
     }
   }
@@ -540,7 +544,7 @@ export function scheduleUpdateOnFiber(
   }
 
   if (__DEV__) {
-    if (isFlushingPassiveEffects) {
+    if (isFlushingPassiveEffects) { //false
       didScheduleUpdateDuringPassiveEffects = true;
     }
   }
@@ -549,9 +553,9 @@ export function scheduleUpdateOnFiber(
     // 设置当前lane index 对应的 时间戳 和 pendingLanes
   markRootUpdated(root, lane, eventTime);
 
-  if (
+  if ( // RenderContext === 2
     (executionContext & RenderContext) !== NoLanes &&
-    root === workInProgressRoot
+    root === workInProgressRoot //false
   ) {
     // This update was dispatched during the render phase. This is a mistake
     // if the update originates from user space (with the exception of local
@@ -576,9 +580,9 @@ export function scheduleUpdateOnFiber(
 
     warnIfUpdatesNotWrappedWithActDEV(fiber);
 
-    if (enableProfilerTimer && enableProfilerNestedUpdateScheduledHook) {
-      if (
-        (executionContext & CommitContext) !== NoContext &&
+    if (enableProfilerTimer && enableProfilerNestedUpdateScheduledHook) { // true
+      if ( // 0b100 === CommitContext
+        (executionContext & CommitContext) !== NoContext &&  // false
         root === rootCommittingMutationOrLayoutEffects
       ) {
         if (fiber.mode & ProfileMode) {
@@ -679,7 +683,7 @@ export function scheduleInitialHydrationOnRoot(
 // work without treating it as a typical update that originates from an event;
 // e.g. retrying a Suspense boundary isn't an update, but it does schedule work
 // on a fiber.
-// 更新 sourceFiber 的 parent 到fiberRoot 的 lane ，返回HostRoot
+// 更新 sourceFiber 的 parent 到fiberRoot 的 lane ，返回 FiberRoot
 function markUpdateLaneFromFiberToRoot(
   sourceFiber: Fiber,
   lane: Lane,
@@ -694,7 +698,7 @@ function markUpdateLaneFromFiberToRoot(
   if (__DEV__) {
     if (
       alternate === null &&
-      (sourceFiber.flags & (Placement | Hydrating)) !== NoFlags
+      (sourceFiber.flags & (Placement | Hydrating)) !== NoFlags // false
     ) {
       warnAboutUpdateOnNotYetMountedFiberInDEV(sourceFiber);
     }
@@ -702,7 +706,7 @@ function markUpdateLaneFromFiberToRoot(
   // Walk the parent path to the root and update the child lanes.
   let node = sourceFiber;
   // return 是否 === parent fiber
-  let parent = sourceFiber.return;
+  let parent = sourceFiber.return; // init return === null
   while (parent !== null) {
     parent.childLanes = mergeLanes(parent.childLanes, lane);
     alternate = parent.alternate;
@@ -720,6 +724,7 @@ function markUpdateLaneFromFiberToRoot(
   }
   // FiberNode (type = HostRoot) , Root(FiberRoot) 和 Root.current = HostRoot , HostRoot.stateNode ===  Root(FiberRoot)
   if (node.tag === HostRoot) {
+    // init , uninitializedFiber.stateNode = root (FiberRoot)
     const root: FiberRoot = node.stateNode;
     return root;
   } else {
@@ -1430,22 +1435,22 @@ export function flushSync(fn) {
   // In legacy mode, we flush pending passive effects at the beginning of the
   // next event, not at the end of the previous one.
   if (
-    rootWithPendingPassiveEffects !== null &&
+    rootWithPendingPassiveEffects !== null && // init rootWithPendingPassiveEffects === null
     rootWithPendingPassiveEffects.tag === LegacyRoot &&
     (executionContext & (RenderContext | CommitContext)) === NoContext
   ) {
     flushPassiveEffects();
   }
 
-  const prevExecutionContext = executionContext;
-  executionContext |= BatchedContext;
+  const prevExecutionContext = executionContext; // init executionContext 0
+  executionContext |= BatchedContext; // BatchedContext 0b001
 
-  const prevTransition = ReactCurrentBatchConfig.transition;
+  const prevTransition = ReactCurrentBatchConfig.transition; //init transition null
   const previousPriority = getCurrentUpdatePriority();
 
   try {
     ReactCurrentBatchConfig.transition = null;
-    setCurrentUpdatePriority(DiscreteEventPriority);
+    setCurrentUpdatePriority(DiscreteEventPriority); // === SyncLane
     if (fn) {
       return fn();
     } else {
@@ -3190,7 +3195,7 @@ function warnIfUpdatesNotWrappedWithActDEV(fiber: Fiber): void {
       if (executionContext !== NoContext) {
         // Legacy mode doesn't warn if the update is batched, i.e.
         // batchedUpdates or flushSync.
-        return;
+        return; // return
       }
       if (
         fiber.tag !== FunctionComponent &&

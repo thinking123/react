@@ -147,7 +147,7 @@ function warnIfStringRefCannotBeAutoConverted(config) {
  */
 const ReactElement = function(type, key, ref, self, source, owner, props) {
   // 构建 组件 porps type key ref 等
-  const element = {
+  const element = { //  $$typeof 是 react 元素 === Symbol.for('react.element')
     // This tag allows us to uniquely identify this as a React Element
     $$typeof: REACT_ELEMENT_TYPE,
 
@@ -441,6 +441,9 @@ export function createElement(type, config, children) {
       }
     }
   }
+  //type === Function (App ...)
+  // Root.render , self === null ,  ReactCurrentOwner.current === null
+
   return ReactElement(
     type,
     key,

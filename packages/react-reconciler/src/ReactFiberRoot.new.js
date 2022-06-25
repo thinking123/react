@@ -59,16 +59,16 @@ function FiberRootNode(
   this.tag = tag; // LegacyRoot
   this.containerInfo = containerInfo; // id="root" html
   this.pendingChildren = null;
-  this.current = null;
+  this.current = null; // current === Host Fiber , FiberNode
   this.pingCache = null;
   this.finishedWork = null;
   this.timeoutHandle = noTimeout;
   this.context = null;
   this.pendingContext = null;
   this.callbackNode = null;
-  this.callbackPriority = NoLane;
-  this.eventTimes = createLaneMap(NoLanes);
-  this.expirationTimes = createLaneMap(NoTimestamp);
+  this.callbackPriority = NoLane;// NoLane === 0b000...(31)
+  this.eventTimes = createLaneMap(NoLanes); // NoLanes === 0b000...(31)
+  this.expirationTimes = createLaneMap(NoTimestamp); //NoTimestamp ===  -1
 
   this.pendingLanes = NoLanes;
   this.suspendedLanes = NoLanes;
@@ -83,33 +83,33 @@ function FiberRootNode(
   this.identifierPrefix = identifierPrefix;
   this.onRecoverableError = onRecoverableError;
 
-  if (enableCache) {
+  if (enableCache) { // true
     this.pooledCache = null;
     this.pooledCacheLanes = NoLanes;
   }
 
-  if (supportsHydration) {
+  if (supportsHydration) { // true
     this.mutableSourceEagerHydrationData = null;
   }
-
-  if (enableSuspenseCallback) {
+  // 启用挂起回调
+  if (enableSuspenseCallback) {  // true
     this.hydrationCallbacks = null;
   }
-
-  if (enableTransitionTracing) {
+  // 启用转换跟踪
+  if (enableTransitionTracing) {// false
     this.transitionCallbacks = null;
     const transitionLanesMap = (this.transitionLanes = []);
     for (let i = 0; i < TotalLanes; i++) {
       transitionLanesMap.push(null);
     }
   }
-
-  if (enableProfilerTimer && enableProfilerCommitHooks) {
+  // 启用探查器计时器
+  if (enableProfilerTimer && enableProfilerCommitHooks) { // true
     this.effectDuration = 0;
     this.passiveEffectDuration = 0;
   }
 
-  if (enableUpdaterTracking) {
+  if (enableUpdaterTracking) { // true
     this.memoizedUpdaters = new Set();
     const pendingUpdatersLaneMap = (this.pendingUpdatersLaneMap = []);
     for (let i = 0; i < TotalLanes; i++) {
@@ -118,7 +118,7 @@ function FiberRootNode(
   }
 
   if (__DEV__) {
-    switch (tag) {
+    switch (tag) { // tag === LegacyRoot , hydrate === false , _debugRootType === render
       case ConcurrentRoot:
         this._debugRootType = hydrate ? 'hydrateRoot()' : 'createRoot()';
         break;
@@ -130,20 +130,20 @@ function FiberRootNode(
 }
 
 export function createFiberRoot(
-  containerInfo: any,
+  containerInfo: any, // root container
   tag: RootTag,// LegacyRoot
-  hydrate: boolean,
-  initialChildren: ReactNodeList,
-  hydrationCallbacks: null | SuspenseHydrationCallbacks,
-  isStrictMode: boolean,
-  concurrentUpdatesByDefaultOverride: null | boolean,
+  hydrate: boolean, // false
+  initialChildren: ReactNodeList, // null
+  hydrationCallbacks: null | SuspenseHydrationCallbacks, // null
+  isStrictMode: boolean, // false
+  concurrentUpdatesByDefaultOverride: null | boolean, // false
   // TODO: We have several of these arguments that are conceptually part of the
   // host config, but because they are passed in at runtime, we have to thread
   // them through the root constructor. Perhaps we should put them all into a
   // single type, like a DynamicHostConfig that is defined by the renderer.
-  identifierPrefix: string,
-  onRecoverableError: null | ((error: mixed) => void),
-  transitionCallbacks: null | TransitionTracingCallbacks,
+  identifierPrefix: string, // ''
+  onRecoverableError: null | ((error: mixed) => void), // () => {}
+  transitionCallbacks: null | TransitionTracingCallbacks, // null
 ): FiberRoot { // 创建Fiber Root
   const root: FiberRoot = (new FiberRootNode(
     containerInfo,
@@ -152,17 +152,17 @@ export function createFiberRoot(
     identifierPrefix,
     onRecoverableError,
   ): any);
-  if (enableSuspenseCallback) {
+  if (enableSuspenseCallback) { // true
     root.hydrationCallbacks = hydrationCallbacks;
   }
 
-  if (enableTransitionTracing) {
+  if (enableTransitionTracing) { // false
     root.transitionCallbacks = transitionCallbacks;
   }
 
   // Cyclic construction. This cheats the type system right now because
   // stateNode is any. 创建Host Fiber ：FiberNode (type = HostRoot)
-  const uninitializedFiber = createHostRootFiber(
+  const uninitializedFiber = createHostRootFiber( // 创建 FiberNode
     tag,
     isStrictMode,
     concurrentUpdatesByDefaultOverride,
@@ -170,9 +170,9 @@ export function createFiberRoot(
   root.current = uninitializedFiber;
   uninitializedFiber.stateNode = root;
 
-  if (enableCache) {
+  if (enableCache) { // true
     const initialCache = createCache();
-    retainCache(initialCache);
+    retainCache(initialCache); // 保存 cache
 
     // The pooledCache is a fresh cache instance that is used temporarily
     // for newly mounted boundaries during a render. In general, the
@@ -184,8 +184,8 @@ export function createFiberRoot(
     root.pooledCache = initialCache;
     retainCache(initialCache);
     const initialState: RootState = {
-      element: initialChildren,
-      isDehydrated: hydrate,
+      element: initialChildren, // null
+      isDehydrated: hydrate, // false
       cache: initialCache,
       transitions: null,
       pendingSuspenseBoundaries: null,
@@ -202,6 +202,19 @@ export function createFiberRoot(
     uninitializedFiber.memoizedState = initialState;
   }
   // 插入 updateQueue 到 uninitializedFiber
+  /*
+    uninitializedFiber.updateQueue = {
+      baseState: fiber.memoizedState, // {element,isDehydrated,cache,transitions,...}
+      firstBaseUpdate: null,
+      lastBaseUpdate: null,
+      shared: {
+        pending: null,
+        interleaved: null,
+        lanes: NoLanes,
+      },
+      effects: null,
+    }
+  */
   initializeUpdateQueue(uninitializedFiber);
 
   return root;

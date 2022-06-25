@@ -15,6 +15,19 @@ import {REACT_CONTEXT_TYPE} from 'shared/ReactSymbols';
 import {pushProvider, popProvider} from './ReactFiberNewContext.new';
 import * as Scheduler from 'scheduler';
 
+/**
+ * AbortController 可以控制 abort fetch 操作
+ *
+ * ab = new AbortController()
+ *
+ * fetch('xxx' , {ab.signal}).then().catch(error => {
+ *
+ * })
+ *
+ * ab.abort()
+ *
+ *
+ */
 // In environments without AbortController (e.g. tests)
 // replace it with a lightweight shim that only has the features we use.
 const AbortControllerLocal = enableCache
@@ -96,7 +109,7 @@ export function createCache(): Cache {
 }
 
 export function retainCache(cache: Cache) {
-  if (!enableCache) {
+  if (!enableCache) { // true
     return;
   }
   if (__DEV__) {

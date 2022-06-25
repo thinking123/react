@@ -122,7 +122,7 @@ function FiberNode(
   mode: TypeOfMode,
 ) {
   // Instance
-  this.tag = tag; // HostRoot
+  this.tag = tag; // init  HostRoot
   this.key = key;
   this.elementType = null;
   this.type = null;
@@ -145,16 +145,16 @@ function FiberNode(
   this.mode = mode;// mode = NoMode
 
   // Effects
-  this.flags = NoFlags;
+  this.flags = NoFlags; // 0b000...
   this.subtreeFlags = NoFlags;
   this.deletions = null;
 
-  this.lanes = NoLanes;
+  this.lanes = NoLanes; // 0b000...
   this.childLanes = NoLanes;
-
+  // 备用
   this.alternate = null;
 
-  if (enableProfilerTimer) {
+  if (enableProfilerTimer) { // true
     // Note: The following is done to avoid a v8 performance cliff.
     //
     // Initializing the fields below to smis and later updating them with
@@ -188,7 +188,7 @@ function FiberNode(
     this._debugOwner = null;
     this._debugNeedsRemount = false;
     this._debugHookTypes = null;
-    if (!hasBadMapPolyfill && typeof Object.preventExtensions === 'function') {
+    if (!hasBadMapPolyfill && typeof Object.preventExtensions === 'function') {// true
       Object.preventExtensions(this);
     }
   }
@@ -209,9 +209,9 @@ function FiberNode(
 //    compatible.
 const createFiber = function( // 用function 返回 new FiberNode
   tag: WorkTag, // HostRoot
-  pendingProps: mixed,
-  key: null | string,
-  mode: TypeOfMode, // mode = NoMode
+  pendingProps: mixed, // init root is null
+  key: null | string,  // init root is null
+  mode: TypeOfMode, //init root is  mode = NoMode
 ): Fiber {
   // $FlowFixMe: the shapes are exact here but Flow doesn't like constructors
   return new FiberNode(tag, pendingProps, key, mode);
@@ -428,8 +428,8 @@ export function resetWorkInProgress(workInProgress: Fiber, renderLanes: Lanes) {
 
 export function createHostRootFiber(
   tag: RootTag,
-  isStrictMode: boolean,
-  concurrentUpdatesByDefaultOverride: null | boolean,
+  isStrictMode: boolean,//false
+  concurrentUpdatesByDefaultOverride: null | boolean, //false
 ): Fiber {
   let mode; // tag === LegacyRoot
   if (tag === ConcurrentRoot) {
@@ -456,7 +456,7 @@ export function createHostRootFiber(
     mode = NoMode;
   }
 
-  if (enableProfilerTimer && isDevToolsPresent) {
+  if (enableProfilerTimer && isDevToolsPresent) { // false
     // Always collect profile timings when DevTools are present.
     // This enables DevTools to start capturing timing at any point–
     // Without some nodes in the tree having empty base times.
@@ -818,7 +818,7 @@ export function assignFiberPropertiesInDEV(
   target.key = source.key;
   target.elementType = source.elementType;
   target.type = source.type;
-  target.stateNode = source.stateNode;
+  target.stateNode = source.stateNode; // HostRoot , stateNode === FiberRootNode , root
   target.return = source.return;
   target.child = source.child;
   target.sibling = source.sibling;
