@@ -360,7 +360,7 @@ function ChildReconciler(shouldTrackSideEffects) {
     // This is simpler for the single child case. We only need to do a
     // placement for inserting new children.
     if (shouldTrackSideEffects && newFiber.alternate === null) {
-      newFiber.flags |= Placement;
+      newFiber.flags |= Placement; // Placement === 0b10 === 2
     }
     return newFiber;
   }
@@ -1197,7 +1197,8 @@ function ChildReconciler(shouldTrackSideEffects) {
       return created;
     } else {
       const created = createFiberFromElement(element, returnFiber.mode, lanes);
-      created.ref = coerceRef(returnFiber, currentFirstChild, element);
+      created.ref = coerceRef(returnFiber, currentFirstChild, element); // 强制Ref
+      // return === 上一层的 fiber , <App/>.return === HostRoot fiber
       created.return = returnFiber;
       return created;
     }
@@ -1271,9 +1272,9 @@ function ChildReconciler(shouldTrackSideEffects) {
         case REACT_ELEMENT_TYPE:
           return placeSingleChild(
             reconcileSingleElement(
-              returnFiber,
+              returnFiber, // init returnFiber == HostRoot.tag === 3
               currentFirstChild,
-              newChild,
+              newChild, // init newChild == <App/>
               lanes,
             ),
           );

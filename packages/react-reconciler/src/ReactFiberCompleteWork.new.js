@@ -973,7 +973,9 @@ function completeWork(
           }
           // This can happen when we abort work.
         }
+        // rootContainerInstance === container === div
         const rootContainerInstance = getRootHostContainer();
+        // {namespace:www.xxx , ancestorInfo: {}}
         const currentHostContext = getHostContext();
         const wasHydrated = popHydrationState(workInProgress);
         if (wasHydrated) {
@@ -981,6 +983,7 @@ function completeWork(
             markUpdate(workInProgress);
           }
         } else {
+          // stateNode 是 fiber 对于的 html : filber.stateNode = <div/>
           workInProgress.stateNode = createTextInstance(
             newText,
             rootContainerInstance,

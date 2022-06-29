@@ -360,9 +360,12 @@ export function createTextInstance(
 ): TextInstance {
   if (__DEV__) {
     const hostContextDev = ((hostContext: any): HostContextDev);
+    // 用 document 创建 fiber html
     validateDOMNesting(null, text, hostContextDev.ancestorInfo);
   }
+  // internalInstanceHandle === current fiber
   const textNode: TextInstance = createTextNode(text, rootContainerInstance);
+  // 对于的html 内保存 fiber ， div[`__reactFiber$xxxxxx`] = fiber
   precacheFiberNode(internalInstanceHandle, textNode);
   return textNode;
 }

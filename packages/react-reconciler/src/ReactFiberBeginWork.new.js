@@ -303,6 +303,7 @@ export function reconcileChildren(
 
     // If we had any progressed work already, that is invalid at this point so
     // let's throw it out.
+    // createFiber === workInProgress.child
     workInProgress.child = reconcileChildFibers(
       workInProgress,
       current.child,
@@ -1298,7 +1299,7 @@ function updateHostRoot(current, workInProgress, renderLanes) {
   // Caution: React DevTools currently depends on this property
   // being called "element".
   const nextChildren = nextState.element;
-  if (supportsHydration && prevState.isDehydrated) {
+  if (supportsHydration && prevState.isDehydrated) { // false === isDehydrated
     // This is a hydration root whose shell has not yet hydrated. We should
     // attempt to hydrate.
 
@@ -1613,7 +1614,7 @@ function mountIndeterminateComponent(
 
   const props = workInProgress.pendingProps;
   let context;
-  if (!disableLegacyContext) {
+  if (!disableLegacyContext) { // disableLegacyContext === false
     const unmaskedContext = getUnmaskedContext(
       workInProgress,
       Component,
@@ -1626,12 +1627,12 @@ function mountIndeterminateComponent(
   let value;
   let hasId;
 
-  if (enableSchedulingProfiler) {
-    markComponentRenderStarted(workInProgress);
+  if (enableSchedulingProfiler) { // true
+    markComponentRenderStarted(workInProgress); // false
   }
   if (__DEV__) {
     if (
-      Component.prototype &&
+      Component.prototype && // Com extends React.Component 组件
       typeof Component.prototype.render === 'function'
     ) {
       const componentName = getComponentNameFromType(Component) || 'Unknown';
@@ -1647,11 +1648,11 @@ function mountIndeterminateComponent(
       }
     }
 
-    if (workInProgress.mode & StrictLegacyMode) {
+    if (workInProgress.mode & StrictLegacyMode) { // false
       ReactStrictModeWarnings.recordLegacyContextWarning(workInProgress, null);
     }
 
-    setIsRendering(true);
+    setIsRendering(true); // DEV  setRendering
     ReactCurrentOwner.current = workInProgress;
     value = renderWithHooks(
       null,
@@ -1770,7 +1771,7 @@ function mountIndeterminateComponent(
     // Proceed under the assumption that this is a function component
     workInProgress.tag = FunctionComponent;
     if (__DEV__) {
-      if (disableLegacyContext && Component.contextTypes) {
+      if (disableLegacyContext && Component.contextTypes) { // false
         console.error(
           '%s uses the legacy contextTypes API which is no longer supported. ' +
             'Use React.createContext() with React.useContext() instead.',
@@ -3747,6 +3748,7 @@ function beginWork(
           renderLanes,
         );
       }
+      //0b00000000100000000000000000 === ForceUpdateForLegacySuspense
       if ((current.flags & ForceUpdateForLegacySuspense) !== NoFlags) {
         // This is a special case that only exists for legacy mode.
         // See https://github.com/facebook/react/pull/19216.
@@ -3761,7 +3763,7 @@ function beginWork(
     }
   } else {
     didReceiveUpdate = false;
-
+      // getIsHydrating === false
     if (getIsHydrating() && isForkedChild(workInProgress)) {
       // Check if this child belongs to a list of muliple children in
       // its parent.

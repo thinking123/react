@@ -17,6 +17,7 @@ import {
 import {ImmediatePriority, scheduleCallback} from './Scheduler';
 
 let syncQueue: Array<SchedulerCallback> | null = null;
+// scheduleLegacySyncCallback() : includesLegacySyncCallbacks = true
 let includesLegacySyncCallbacks: boolean = false;
 let isFlushingSyncQueue: boolean = false;
 
@@ -49,6 +50,7 @@ export function flushSyncCallbacksOnlyInLegacyMode() {
 }
 
 export function flushSyncCallbacks() {
+  //init isFlushingSyncQueue == false
   if (!isFlushingSyncQueue && syncQueue !== null) {
     // Prevent re-entrance.
     isFlushingSyncQueue = true;
@@ -59,6 +61,7 @@ export function flushSyncCallbacks() {
       const queue = syncQueue;
       // TODO: Is this necessary anymore? The only user code that runs in this
       // queue is in the render or commit phases.
+      // DiscreteEventPriority === SyncLane = 1
       setCurrentUpdatePriority(DiscreteEventPriority);
       for (; i < queue.length; i++) {
         let callback = queue[i];

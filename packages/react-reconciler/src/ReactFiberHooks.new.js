@@ -376,6 +376,7 @@ export function renderWithHooks<Props, SecondArg>(
   nextRenderLanes: Lanes,
 ): any {
   renderLanes = nextRenderLanes;
+  // hook 调用
   currentlyRenderingFiber = workInProgress;
 
   if (__DEV__) {
@@ -418,6 +419,14 @@ export function renderWithHooks<Props, SecondArg>(
       // This dispatcher does that.
       ReactCurrentDispatcher.current = HooksDispatcherOnMountWithHookTypesInDEV;
     } else {
+      // 设置 React.useState 等的 context :
+      // resolveDispatcher() =>  ReactCurrentDispatcher.current
+      /*
+          function useState(initialState) {
+            var dispatcher = resolveDispatcher();
+            return dispatcher.useState(initialState);
+          }
+      */
       ReactCurrentDispatcher.current = HooksDispatcherOnMountInDEV;
     }
   } else {
@@ -430,7 +439,7 @@ export function renderWithHooks<Props, SecondArg>(
   let children = Component(props, secondArg);
 
   // Check if there was a render phase update
-  if (didScheduleRenderPhaseUpdateDuringThisPass) {
+  if (didScheduleRenderPhaseUpdateDuringThisPass) { // false
     // Keep rendering in a loop for as long as render phase updates continue to
     // be scheduled. Use a counter to prevent infinite loops.
     let numberOfReRenders: number = 0;
@@ -637,7 +646,7 @@ function mountWorkInProgressHook(): Hook {
     baseQueue: null,
     queue: null,
 
-    next: null,
+    next: null, // next -> hook , hook.next -> hook , ...
   };
 
   if (workInProgressHook === null) {
@@ -1658,7 +1667,10 @@ function updateRef<T>(initialValue: T): {|current: T|} {
   const hook = updateWorkInProgressHook();
   return hook.memoizedState;
 }
+/**
 
+ React.useEffect(create , [deps])
+ */
 function mountEffectImpl(fiberFlags, hookFlags, create, deps): void {
   const hook = mountWorkInProgressHook();
   const nextDeps = deps === undefined ? null : deps;
@@ -1704,7 +1716,7 @@ function mountEffect(
 ): void {
   if (
     __DEV__ &&
-    enableStrictEffects &&
+    enableStrictEffects && // false
     (currentlyRenderingFiber.mode & StrictEffectsMode) !== NoMode
   ) {
     return mountEffectImpl(
@@ -1895,6 +1907,10 @@ function updateCallback<T>(callback: T, deps: Array<mixed> | void | null): T {
   return callback;
 }
 
+/**
+
+    React.useMemo(nextCreate , [deps])
+ */
 function mountMemo<T>(
   nextCreate: () => T,
   deps: Array<mixed> | void | null,
@@ -2262,6 +2278,7 @@ function dispatchSetState<S, A>(
       // The queue is currently empty, which means we can eagerly compute the
       // next state before entering the render phase. If the new state is the
       // same as the current state, we may be able to bail out entirely.
+      // lastRenderedReducer === setState(lastRenderedReducer === pre => pre)
       const lastRenderedReducer = queue.lastRenderedReducer;
       if (lastRenderedReducer !== null) {
         let prevDispatcher;
@@ -2297,7 +2314,7 @@ function dispatchSetState<S, A>(
     const eventTime = requestEventTime();
     const root = scheduleUpdateOnFiber(fiber, lane, eventTime);
     if (root !== null) {
-      entangleTransitionUpdate(root, queue, lane);
+      entangleTransitionUpdate(root, queue, lane); // 纠缠过渡更新
     }
   }
 
@@ -2362,7 +2379,7 @@ function enqueueUpdate<S, A>(
     queue.pending = update;
   }
 }
-
+// Transition(过渡 )
 function entangleTransitionUpdate<S, A>(
   root: FiberRoot,
   queue: UpdateQueue<S, A>,

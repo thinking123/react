@@ -443,7 +443,7 @@ export function createElement(type, config, children) {
   }
   //type === Function (App ...)
   // Root.render , self === null ,  ReactCurrentOwner.current === null
-
+  // ReactCurrentOwner.current 是 当前 已经render 的 filber
   return ReactElement(
     type,
     key,

@@ -76,6 +76,7 @@ function resetNestedUpdateFlag(): void {
 }
 
 function syncNestedUpdateFlag(): void {
+  // true
   if (enableProfilerNestedUpdatePhase) {
     currentUpdateIsNested = nestedUpdateScheduled;
     nestedUpdateScheduled = false;

@@ -17,7 +17,7 @@ let nativeConsoleLog: null | Function = null;
 
 const pendingGroupArgs: Array<any> = [];
 let printedGroupIndex: number = -1;
-
+// 格式化输出 lanes : 0b01 => 0b00000...01
 function formatLanes(laneOrLanes: Lane | Lanes): string {
   return '0b' + (laneOrLanes: any).toString(2).padStart(31, '0');
 }
@@ -177,7 +177,7 @@ export function logPassiveEffectsStopped(): void {
 
 export function logRenderStarted(lanes: Lanes): void {
   if (__DEV__) {
-    if (enableDebugTracing) {
+    if (enableDebugTracing) {// true
       group(
         `%c⚛️%c render%c (${formatLanes(lanes)})`,
         REACT_LOGO_STYLE,

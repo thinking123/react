@@ -45,10 +45,10 @@ function getUnmaskedContext(
   Component: Function,
   didPushOwnContextIfProvider: boolean,
 ): Object {
-  if (disableLegacyContext) {
+  if (disableLegacyContext) { // false
     return emptyContextObject;
   } else {
-    if (didPushOwnContextIfProvider && isContextProvider(Component)) {
+    if (didPushOwnContextIfProvider && isContextProvider(Component)) { // false
       // If the fiber is a context provider itself, when we read its context
       // we may have already pushed its own child context on the stack. A context
       // provider should not "see" its own child context. Therefore we read the
@@ -77,7 +77,7 @@ function getMaskedContext(
   workInProgress: Fiber,
   unmaskedContext: Object,
 ): Object {
-  if (disableLegacyContext) {
+  if (disableLegacyContext) { // false
     return emptyContextObject;
   } else {
     const type = workInProgress.type;
@@ -159,7 +159,7 @@ function pushTopLevelContextObject(
 ): void {
   if (disableLegacyContext) { // false
     return;
-  } else {
+  } else { // emptyContextObject === {}
     if (contextStackCursor.current !== emptyContextObject) {
       throw new Error(
         'Unexpected context found on stack. ' +

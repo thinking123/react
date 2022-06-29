@@ -93,7 +93,7 @@ export function pushRootTransition(
   root: FiberRoot,
   renderLanes: Lanes,
 ) {
-  if (enableTransitionTracing) {
+  if (enableTransitionTracing) { // false
     const rootTransitions = getWorkInProgressTransitions();
     push(transitionStack, rootTransitions, workInProgress);
   }

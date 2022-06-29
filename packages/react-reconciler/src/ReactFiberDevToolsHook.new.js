@@ -487,7 +487,7 @@ export function markRenderStarted(lanes: Lanes): void {
 export function markRenderYielded(): void {
   if (enableSchedulingProfiler) {
     if (
-      injectedProfilingHooks !== null &&
+      injectedProfilingHooks !== null && // injectedProfilingHooks null
       typeof injectedProfilingHooks.markRenderYielded === 'function'
     ) {
       injectedProfilingHooks.markRenderYielded();

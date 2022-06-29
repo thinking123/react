@@ -198,7 +198,7 @@ export function getNextLanes(root: FiberRoot, wipLanes: Lanes): Lanes {
 
   // Do not work on any idle work until all the non-idle work has finished,
   // even if the work is suspended.
-  // NonIdleLanes == 0b0001111111111111111111111111111
+  // NonIdleLanes == 0b0001111111111111111111111111111 ， 非空闲车道
   const nonIdlePendingLanes = pendingLanes & NonIdleLanes;
   if (nonIdlePendingLanes !== NoLanes) {
     // nonIdlePendingLanes - suspendedLanes bits
@@ -269,7 +269,7 @@ export function getNextLanes(root: FiberRoot, wipLanes: Lanes): Lanes {
     nextLanes |= pendingLanes & DefaultLane;
   }
 
-  // Check for entangled lanes and add them to the batch.
+  // Check for entangled lanes（纠缠车道） and add them to the batch.
   //
   // A lane is said to be entangled with another when it's not allowed to render
   // in a batch that does not also include the other lane. Typically we do this
@@ -396,8 +396,9 @@ export function markStarvedLanesAsExpired(
   // TODO: This gets called every time we yield. We can optimize by storing
   // the earliest expiration time on the root. Then use that to quickly bail out
   // of this function.
-
+  // 待处理车道
   const pendingLanes = root.pendingLanes;
+  // 占用车道
   const suspendedLanes = root.suspendedLanes;
   const pingedLanes = root.pingedLanes;
   const expirationTimes = root.expirationTimes;
@@ -407,7 +408,9 @@ export function markStarvedLanesAsExpired(
   // it as expired to force it to finish.
   let lanes = pendingLanes;
   while (lanes > 0) {
+    // 返回0b00100100 : 最大的 不是 0 的 index
     const index = pickArbitraryLaneIndex(lanes);
+    // 得到最大的index 的 value ： 0b00100000 , 当前车道的 lane
     const lane = 1 << index;
 
     const expirationTime = expirationTimes[index];
@@ -415,18 +418,21 @@ export function markStarvedLanesAsExpired(
       // Found a pending lane with no expiration time. If it's not suspended, or
       // if it's pinged, assume it's CPU-bound. Compute a new expiration time
       // using the current time.
+      // 待处理车道，没有过期时间，不是被占用的，已经被ping 过 ，就是cpu 绑定 ， 用当前时间重新计算过期时间
       if (
         (lane & suspendedLanes) === NoLanes ||
         (lane & pingedLanes) !== NoLanes
       ) {
         // Assumes timestamps are monotonically increasing.
+        // 重新计算过期时间 ,SyncLane ，expirationTime = currentTime + 250
         expirationTimes[index] = computeExpirationTime(lane, currentTime);
       }
     } else if (expirationTime <= currentTime) {
       // This lane expired
+      // 车道已经过期
       root.expiredLanes |= lane;
     }
-    // 从 lanes 删除 lane bit
+    // 已经处理了 lane ， 从 lanes 删除 lane bit
     lanes &= ~lane;
   }
 }
@@ -487,7 +493,7 @@ export function includesExpiredLane(root: FiberRoot, lanes: Lanes) {
   // expire after a render has already started.
   return (lanes & root.expiredLanes) !== NoLanes;
 }
-
+//  0b0000000001111111111111111000000 === TransitionLanes
 export function isTransitionLane(lane: Lane) {
   return (lane & TransitionLanes) !== NoLanes;
 }
@@ -512,8 +518,9 @@ export function claimNextRetryLane(): Lane {
   }
   return lane;
 }
-// 返回 lane 最低 bit (0...0101) -> 0...0001
+// 返回 lane 最低 不是0 bit (0...0101) -> 0...0001
 //       bit (0...0110) -> 0...0010
+// bit 的 位数越低 优先级越高
 export function getHighestPriorityLane(lanes: Lanes): Lane {
   return lanes & -lanes;
 }
@@ -639,7 +646,8 @@ export function markRootPinged(
 export function markRootMutableRead(root: FiberRoot, updateLane: Lane) {
   root.mutableReadLanes |= updateLane & root.pendingLanes;
 }
-
+// bit1 & ~bit2 === bit1 - bit2 , bit 减法 : 101 & ~100 => 101 & 011 => 001
+// 设置已经完成的 lane
 export function markRootFinished(root: FiberRoot, remainingLanes: Lanes) {
   const noLongerPendingLanes = root.pendingLanes & ~remainingLanes;
 

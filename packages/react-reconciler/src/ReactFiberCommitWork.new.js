@@ -341,7 +341,7 @@ function commitBeforeMutationEffects_begin() {
 
     // This phase is only used for beforeActiveInstanceBlur.
     // Let's skip the whole loop if it's off.
-    if (enableCreateEventHandleAPI) {
+    if (enableCreateEventHandleAPI) { // true
       // TODO: Should wrap this in flags check, too, as optimization
       const deletions = fiber.deletions;
       if (deletions !== null) {
@@ -472,7 +472,7 @@ function commitBeforeMutationEffectsOnFiber(finishedWork: Fiber) {
         break;
       }
       case HostRoot: {
-        if (supportsMutation) {
+        if (supportsMutation) { // true
           const root = finishedWork.stateNode;
           clearContainer(root.containerInfo);
         }

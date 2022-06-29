@@ -475,6 +475,16 @@ export function processUpdateQueue<State>(
   renderLanes: Lanes,
 ): void {
   // This is always non-null on a ClassComponent or HostRoot
+  /*
+  updateQueue = {
+baseState:{element: null, isDehydrated: false, cache: {…}, transitions: null, pendingSuspenseBoundaries: null}
+effects:null
+firstBaseUpdate:null
+lastBaseUpdate:null
+shared:{pending: {}, interleaved: null, lanes: 0}
+  }
+
+  */
   const queue: UpdateQueue<State> = (workInProgress.updateQueue: any);
 
   hasForceUpdate = false;
@@ -483,6 +493,7 @@ export function processUpdateQueue<State>(
     currentlyProcessingQueue = queue.shared;
   }
 
+  // init firstBaseUpdate , lastBaseUpdate null
   let firstBaseUpdate = queue.firstBaseUpdate;
   let lastBaseUpdate = queue.lastBaseUpdate;
 
@@ -493,6 +504,7 @@ export function processUpdateQueue<State>(
 
     // The pending queue is circular. Disconnect the pointer between first
     // and last so that it's non-circular.
+  //pendingQueue.next === pendingQueue 循环列表
     const lastPendingUpdate = pendingQueue;
     const firstPendingUpdate = lastPendingUpdate.next;
     lastPendingUpdate.next = null;

@@ -278,6 +278,7 @@ let executionContext: ExecutionContext = NoContext;
 // The root we're working on
 let workInProgressRoot: FiberRoot | null = null;
 // The fiber we're working on
+// 当前 fiber
 let workInProgress: Fiber | null = null;
 // The lanes we're rendering
 let workInProgressRootRenderLanes: Lanes = NoLanes;
@@ -764,6 +765,7 @@ function ensureRootIsScheduled(root: FiberRoot, currentTime: number) {
 
   // Check if any lanes are being starved by other work. If so, mark them as
   // expired so we know to work on those next.
+  //  标记被占用的车道 过期
   // 计算 root 的 pendingLanes -> expiredLanes
   markStarvedLanesAsExpired(root, currentTime);
 
@@ -795,7 +797,7 @@ function ensureRootIsScheduled(root: FiberRoot, currentTime: number) {
     // on the `act` queue.
     !(
       __DEV__ &&
-      ReactCurrentActQueue.current !== null &&
+      ReactCurrentActQueue.current !== null && // false
       existingCallbackNode !== fakeActCallbackNode
     )
   ) {
@@ -816,7 +818,7 @@ function ensureRootIsScheduled(root: FiberRoot, currentTime: number) {
     return;
   }
 
-  if (existingCallbackNode != null) {
+  if (existingCallbackNode != null) { // init null
     // Cancel the existing callback. We'll schedule a new one below.
     cancelCallback(existingCallbackNode);
   }
@@ -826,17 +828,19 @@ function ensureRootIsScheduled(root: FiberRoot, currentTime: number) {
   if (newCallbackPriority === SyncLane) {
     // Special case: Sync React callbacks are scheduled on a special
     // internal queue
-    if (root.tag === LegacyRoot) {
+    if (root.tag === LegacyRoot) { // LegacyRoot === 0
       if (__DEV__ && ReactCurrentActQueue.isBatchingLegacy !== null) {
         ReactCurrentActQueue.didScheduleLegacyUpdate = true;
       }
+      // 插入 cb(performSyncWorkOnRoot) to syncQueue[]
       scheduleLegacySyncCallback(performSyncWorkOnRoot.bind(null, root));
     } else {
       scheduleSyncCallback(performSyncWorkOnRoot.bind(null, root));
     }
+    // 是否支持 queueMicrotask ， 或者 Promise
     if (supportsMicrotasks) {
       // Flush the queue in a microtask.
-      if (__DEV__ && ReactCurrentActQueue.current !== null) {
+      if (__DEV__ && ReactCurrentActQueue.current !== null) { // init null
         // Inside `act`, use our internal `act` queue so that these get flushed
         // at the end of the current scope even when using the sync version
         // of `act`.
@@ -847,6 +851,7 @@ function ensureRootIsScheduled(root: FiberRoot, currentTime: number) {
           // https://github.com/facebook/react/issues/22459
           // We don't support running callbacks in the middle of render
           // or commit so we need to check against that.
+          //  init  executionContext |= BatchedContext; BatchedContext == 1
           if (
             (executionContext & (RenderContext | CommitContext)) ===
             NoContext
@@ -1294,6 +1299,7 @@ function markRootSuspended(root, suspendedLanes) {
 // This is the entry point for synchronous tasks that don't go
 // through Scheduler
 function performSyncWorkOnRoot(root) {
+  // true
   if (enableProfilerTimer && enableProfilerNestedUpdatePhase) {
     syncNestedUpdateFlag();
   }
@@ -1553,7 +1559,7 @@ function prepareFreshStack(root: FiberRoot, lanes: Lanes): Fiber {
   workInProgressRootPingedLanes = NoLanes;
   workInProgressRootConcurrentErrors = null;
   workInProgressRootRecoverableErrors = null;
-
+  // 将交错更新加入队列
   enqueueInterleavedUpdates();
 
   if (__DEV__) {
@@ -1650,9 +1656,32 @@ function handleError(root, thrownValue): void {
 
 function pushDispatcher() {
   const prevDispatcher = ReactCurrentDispatcher.current;
+  /*
+
+  ContextOnlyDispatcher = { readContext,
+
+  useCallback: throwInvalidHookError,
+  useContext: throwInvalidHookError,
+  useEffect: throwInvalidHookError,
+  useImperativeHandle: throwInvalidHookError,
+  useInsertionEffect: throwInvalidHookError,
+  useLayoutEffect: throwInvalidHookError,
+  useMemo: throwInvalidHookError,
+  useReducer: throwInvalidHookError,
+  useRef: throwInvalidHookError,
+  useState: throwInvalidHookError,
+  useDebugValue: throwInvalidHookError,
+  useDeferredValue: throwInvalidHookError,
+  useTransition: throwInvalidHookError,
+  useMutableSource: throwInvalidHookError,
+  useSyncExternalStore: throwInvalidHookError,
+  useId: throwInvalidHookError,
+  }
+
+  */
   ReactCurrentDispatcher.current = ContextOnlyDispatcher;
   if (prevDispatcher === null) {
-    // The React isomorphic package does not include a default dispatcher.
+    // The React isomorphic(同形的) package does not include a default dispatcher.
     // Instead the first renderer will lazily attach one, in order to give
     // nicer error messages.
     return ContextOnlyDispatcher;
@@ -1738,7 +1767,7 @@ function renderRootSync(root: FiberRoot, lanes: Lanes) {
   // and prepare a fresh one. Otherwise we'll continue where we left off.
   if (workInProgressRoot !== root || workInProgressRootRenderLanes !== lanes) {
     if (enableUpdaterTracking) {
-      if (isDevToolsPresent) {
+      if (isDevToolsPresent) { // false
         const memoizedUpdaters = root.memoizedUpdaters;
         if (memoizedUpdaters.size > 0) {
           restorePendingUpdaters(root, workInProgressRootRenderLanes);
@@ -1763,7 +1792,7 @@ function renderRootSync(root: FiberRoot, lanes: Lanes) {
     }
   }
 
-  if (enableSchedulingProfiler) {
+  if (enableSchedulingProfiler) { // true
     markRenderStarted(lanes);
   }
 
@@ -1809,6 +1838,7 @@ function renderRootSync(root: FiberRoot, lanes: Lanes) {
 /** @noinline */
 function workLoopSync() {
   // Already timed out, so perform work without checking if we need to yield.
+  // workInProgress === child filber ，递归处理 !== null
   while (workInProgress !== null) { //workInProgress ===  FiberNode.alternate
     performUnitOfWork(workInProgress);
   }
@@ -1915,6 +1945,7 @@ function performUnitOfWork(unitOfWork: Fiber): void {
     next = beginWork(current, unitOfWork, subtreeRenderLanes);
     stopProfilerTimerIfRunningAndRecordDelta(unitOfWork, true);
   } else {
+    // 返回  child fiber
     next = beginWork(current, unitOfWork, subtreeRenderLanes);
   }
 
@@ -2432,6 +2463,7 @@ export function flushPassiveEffects(): boolean {
   // in the first place because we used to wrap it with
   // `Scheduler.runWithPriority`, which accepts a function. But now we track the
   // priority within React itself, so we can mutate the variable directly.
+  // init rootWithPendingPassiveEffects === null
   if (rootWithPendingPassiveEffects !== null) {
     // Cache the root since rootWithPendingPassiveEffects is cleared in
     // flushPassiveEffectsImpl
@@ -3012,6 +3044,7 @@ if (__DEV__ && replayFailedUnitOfWorkWithInvokeGuardedCallback) {
     // Before entering the begin phase, copy the work-in-progress onto a dummy
     // fiber. If beginWork throws, we'll use this to reset the state.
     // dev 模式，temp dummyFiber 保存  unitOfWork 属性，调试
+    // current === unitOfWork.alternate
     const originalWorkInProgressCopy = assignFiberPropertiesInDEV(
       dummyFiber,
       unitOfWork,
