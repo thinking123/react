@@ -104,7 +104,7 @@ export function popRootTransition(
   root: FiberRoot,
   renderLanes: Lanes,
 ) {
-  if (enableTransitionTracing) {
+  if (enableTransitionTracing) { // false
     pop(transitionStack, workInProgress);
   }
 }

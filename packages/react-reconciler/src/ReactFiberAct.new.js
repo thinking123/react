@@ -15,6 +15,7 @@ import {warnsIfNotActing} from './ReactFiberHostConfig';
 
 const {ReactCurrentActQueue} = ReactSharedInternals;
 
+// 判断是否在jest 环境运行react，需要 act
 export function isLegacyActEnvironment(fiber: Fiber) {
   if (__DEV__) {
     // Legacy mode. We preserve the behavior of React 17's act. It assumes an
@@ -24,6 +25,7 @@ export function isLegacyActEnvironment(fiber: Fiber) {
 
     const isReactActEnvironmentGlobal = // undefined
       // $FlowExpectedError – Flow doesn't know about IS_REACT_ACT_ENVIRONMENT global
+      // IS_REACT_ACT_ENVIRONMENT === undefined
       typeof IS_REACT_ACT_ENVIRONMENT !== 'undefined'
         ? IS_REACT_ACT_ENVIRONMENT
         : undefined;

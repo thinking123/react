@@ -359,6 +359,7 @@ function ChildReconciler(shouldTrackSideEffects) {
   function placeSingleChild(newFiber: Fiber): Fiber {
     // This is simpler for the single child case. We only need to do a
     // placement for inserting new children.
+    // shouldTrackSideEffects === true
     if (shouldTrackSideEffects && newFiber.alternate === null) {
       newFiber.flags |= Placement; // Placement === 0b10 === 2
     }
@@ -1244,9 +1245,9 @@ function ChildReconciler(shouldTrackSideEffects) {
   // itself. They will be added to the side-effect list as we pass through the
   // children and the parent.
   function reconcileChildFibers(
-    returnFiber: Fiber,
+    returnFiber: Fiber, // currentFirstChild.return === returnFiber
     currentFirstChild: Fiber | null,
-    newChild: any,
+    newChild: any, // init host newChild === {$$typeof: , type: <App/>}
     lanes: Lanes,
   ): Fiber | null {
     // This function is not recursive.
@@ -1271,6 +1272,7 @@ function ChildReconciler(shouldTrackSideEffects) {
       switch (newChild.$$typeof) {
         case REACT_ELEMENT_TYPE:
           return placeSingleChild(
+            // init 创建 currentFirstChild fiber
             reconcileSingleElement(
               returnFiber, // init returnFiber == HostRoot.tag === 3
               currentFirstChild,

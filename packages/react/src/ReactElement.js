@@ -32,7 +32,7 @@ function hasValidRef(config) {
   if (__DEV__) {
     if (hasOwnProperty.call(config, 'ref')) {
       const getter = Object.getOwnPropertyDescriptor(config, 'ref').get;
-      if (getter && getter.isReactWarning) {
+      if (getter && getter.isReactWarning) { // defineKeyPropWarningGetter 设置
         return false;
       }
     }
@@ -149,7 +149,7 @@ const ReactElement = function(type, key, ref, self, source, owner, props) {
   // 构建 组件 porps type key ref 等
   const element = { //  $$typeof 是 react 元素 === Symbol.for('react.element')
     // This tag allows us to uniquely identify this as a React Element
-    $$typeof: REACT_ELEMENT_TYPE,
+    $$typeof: REACT_ELEMENT_TYPE, // Symbol.for('react.element');
 
     // Built-in properties that belong on the element
     type: type,
@@ -393,16 +393,16 @@ export function createElement(type, config, children) {
     for (propName in config) {
       if (
         hasOwnProperty.call(config, propName) &&
-        !RESERVED_PROPS.hasOwnProperty(propName)
+        !RESERVED_PROPS.hasOwnProperty(propName) // RESERVED_PROPS = [key, ref, __self,__source]
       ) {
-        props[propName] = config[propName];
+        props[propName] = config[propName]; // 设置props
       }
     }
   }
 
   // Children can be more than one argument, and those are transferred onto
   // the newly allocated props object.
-  const childrenLength = arguments.length - 2;
+  const childrenLength = arguments.length - 2; //createElement(type , props , child1 ,child2)
   if (childrenLength === 1) {
     props.children = children;
   } else if (childrenLength > 1) {
@@ -415,7 +415,7 @@ export function createElement(type, config, children) {
         Object.freeze(childArray);
       }
     }
-    props.children = childArray;
+    props.children = childArray; // 设置 props children
   }
 
   // Resolve default props , 设置 defaultProps 默认值

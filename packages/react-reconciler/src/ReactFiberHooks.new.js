@@ -637,7 +637,7 @@ export function resetHooksAfterThrow(): void {
   didScheduleRenderPhaseUpdateDuringThisPass = false;
   localIdCounter = 0;
 }
-
+ // link连接 hook： hook1->hook2-> ...
 function mountWorkInProgressHook(): Hook {
   const hook: Hook = {
     memoizedState: null,
@@ -648,12 +648,13 @@ function mountWorkInProgressHook(): Hook {
 
     next: null, // next -> hook , hook.next -> hook , ...
   };
-
+  // init workInProgressHook === null
   if (workInProgressHook === null) {
     // This is the first hook in the list
     currentlyRenderingFiber.memoizedState = workInProgressHook = hook;
   } else {
     // Append to the end of the list
+    // 串联 hooks , useState1 , useEffect1 , -> ...
     workInProgressHook = workInProgressHook.next = hook;
   }
   return workInProgressHook;
@@ -1512,6 +1513,18 @@ function forceStoreRerender(fiber) {
 function mountState<S>(
   initialState: (() => S) | S,
 ): [S, Dispatch<BasicStateAction<S>>] {
+  /*
+ currentlyRenderingFiber.memoizedState = workInProgressHook = hook = {
+    memoizedState: null,
+
+    baseState: null,
+    baseQueue: null,
+    queue: null,
+
+    next: null, // next -> hook , hook.next -> hook , ...
+  };
+
+  */
   const hook = mountWorkInProgressHook();
   if (typeof initialState === 'function') {
     // $FlowFixMe: Flow doesn't like mixed types
@@ -1529,7 +1542,7 @@ function mountState<S>(
   hook.queue = queue;
   const dispatch: Dispatch<
     BasicStateAction<S>,
-  > = (queue.dispatch = (dispatchSetState.bind(
+  > = (queue.dispatch = (dispatchSetState.bind( // bind 之后修改 currentlyRenderingFiber ，bind的还是原来的 currentlyRenderingFiber
     null,
     currentlyRenderingFiber,
     queue,
@@ -1560,6 +1573,13 @@ function pushEffect(tag, create, destroy, deps) {
   };
   let componentUpdateQueue: null | FunctionComponentUpdateQueue = (currentlyRenderingFiber.updateQueue: any);
   if (componentUpdateQueue === null) {
+    /*
+  return {
+    lastEffect: null,
+    stores: null,
+  };
+
+    */
     componentUpdateQueue = createFunctionComponentUpdateQueue();
     currentlyRenderingFiber.updateQueue = (componentUpdateQueue: any);
     componentUpdateQueue.lastEffect = effect.next = effect;
@@ -1727,7 +1747,9 @@ function mountEffect(
     );
   } else {
     return mountEffectImpl(
+      //2408  //8388608
       PassiveEffect | PassiveStaticEffect,
+      // 8
       HookPassive,
       create,
       deps,
@@ -2243,7 +2265,7 @@ function dispatchReducerAction<S, A>(
 function dispatchSetState<S, A>(
   fiber: Fiber,
   queue: UpdateQueue<S, A>,
-  action: A,
+  action: A, // action === setState(fun)
 ) {
   if (__DEV__) {
     if (typeof arguments[3] === 'function') {
@@ -2600,6 +2622,7 @@ if (__DEV__) {
     ): void {
       currentHookNameInDev = 'useEffect';
       mountHookTypesDev();
+      //deps is Array
       checkDepsAreArrayDev(deps);
       return mountEffect(create, deps);
     },
@@ -2667,8 +2690,10 @@ if (__DEV__) {
       initialState: (() => S) | S,
     ): [S, Dispatch<BasicStateAction<S>>] {
       currentHookNameInDev = 'useState';
-      mountHookTypesDev();
+      // hookTypesDev.push()
+      mountHookTypesDev(currentHookNameInDev);
       const prevDispatcher = ReactCurrentDispatcher.current;
+      // 防止在hooks 内 调用 hooks
       ReactCurrentDispatcher.current = InvalidNestedHooksDispatcherOnMountInDEV;
       try {
         return mountState(initialState);

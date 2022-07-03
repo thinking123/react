@@ -410,6 +410,21 @@ export function jsxWithValidationDynamic(type, props, key) {
   return jsxWithValidation(type, props, key, false);
 }
 
+/*
+对 createElement(type , props ,children)
+返回 :
+
+  const element = { //  $$typeof 是 react 元素 === Symbol.for('react.element')
+    $$typeof: REACT_ELEMENT_TYPE,
+    type: type,
+    key: key,
+    ref: ref,
+    props: props,
+    // Record the component responsible for creating this element.
+    _owner: owner,
+  };
+
+*/
 export function createElementWithValidation(type, props, children) {
   // 校验 type 是否是function 或者 Fragment 等
   const validType = isValidElementType(type);

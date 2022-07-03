@@ -22,6 +22,7 @@ type BasicStateAction<S> = (S => S) | S;
 type Dispatch<A> = A => void;
 
 function resolveDispatcher() {
+  // 在 调用 <App /> function 之前设置  ReactCurrentDispatcher.current = HooksDispatcherOnMountInDEV
   const dispatcher = ReactCurrentDispatcher.current;
   if (__DEV__) {
     if (dispatcher === null) {

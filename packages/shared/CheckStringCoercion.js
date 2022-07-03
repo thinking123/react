@@ -149,6 +149,7 @@ export function checkFormFieldValueStringCoercion(value: mixed) {
           ' This value must be coerced to a string before before using it here.',
         typeName(value),
       );
+      // Coercion(强制)
       return testStringCoercion(value); // throw (to help callers find troubleshooting comments)
     }
   }

@@ -6,7 +6,7 @@
  */
 
 let didWarnValueNull = false;
-
+//校验 input props 格式，必须设置value props
 export function validateProperties(type, props) {
   if (__DEV__) {
     if (type !== 'input' && type !== 'textarea' && type !== 'select') {

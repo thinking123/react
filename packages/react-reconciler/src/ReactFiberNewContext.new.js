@@ -89,7 +89,7 @@ export function pushProvider<T>(
   context: ReactContext<T>,
   nextValue: T,
 ): void {
-  if (isPrimaryRenderer) {
+  if (isPrimaryRenderer) { // true
     push(valueCursor, context._currentValue, providerFiber);
 
     context._currentValue = nextValue;
@@ -104,7 +104,7 @@ export function pushProvider<T>(
             'same context provider. This is currently unsupported.',
         );
       }
-      context._currentRenderer = rendererSigil;
+      context._currentRenderer = rendererSigil; // Sigil(标志)
     }
   } else {
     push(valueCursor, context._currentValue2, providerFiber);
@@ -132,14 +132,14 @@ export function popProvider(
 ): void {
   const currentValue = valueCursor.current;
   pop(valueCursor, providerFiber);
-  if (isPrimaryRenderer) {
+  if (isPrimaryRenderer) { // true
     if (
       enableServerContext &&
       currentValue === REACT_SERVER_CONTEXT_DEFAULT_VALUE_NOT_LOADED
     ) {
       context._currentValue = context._defaultValue;
     } else {
-      context._currentValue = currentValue;
+      context._currentValue = currentValue; // host null
     }
   } else {
     if (

@@ -271,7 +271,7 @@ const warnUnknownProperties = function(type, props, eventRegistry) {
     }
   }
 };
-
+// 校验Props , click ...  格式
 export function validateProperties(type, props, eventRegistry) {
   if (isCustomComponent(type, props)) {
     return;

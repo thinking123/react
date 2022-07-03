@@ -141,7 +141,7 @@ function getContextForSubtree(
   parentComponent: ?React$Component<any, any>,
 ): Object {
   if (!parentComponent) {
-    return emptyContextObject;
+    return emptyContextObject; // {}
   }
 
   const fiber = getInstance(parentComponent);
@@ -283,6 +283,15 @@ export function createHydrationContainer(
   transitionCallbacks: null | TransitionTracingCallbacks,
 ): OpaqueRoot {
   const hydrate = true;
+  /*
+  new Host and Root fiber
+
+  Root.current = Host
+  Host.stateNode = Root
+
+  Host === uninitializedFiber
+
+  */
   const root = createFiberRoot(
     containerInfo,
     tag,
@@ -297,6 +306,7 @@ export function createHydrationContainer(
   );
 
   // TODO: Move this to FiberRoot constructor
+  // init context === emptyContextObject === {}
   root.context = getContextForSubtree(null);
 
   // Schedule the initial render. In a hydration root, this is different from
@@ -305,6 +315,7 @@ export function createHydrationContainer(
   // NOTE: This update intentionally doesn't have a payload. We're only using
   // the update to schedule work on the root fiber (and, for legacy roots, to
   // enqueue the callback if one is provided).
+  //current === Host === uninitializedFiber
   const current = root.current;
   const eventTime = requestEventTime();
   const lane = requestUpdateLane(current);
@@ -391,10 +402,11 @@ export function updateContainer(
     update.callback = callback;
   }
   // 连接 update to current
+  // 设置 updateQueue.shared.pending -> update
   enqueueUpdate(current, update, lane); // HostRoot Fiber
   const root = scheduleUpdateOnFiber(current, lane, eventTime);
   if (root !== null) {
-    entangleTransitions(root, current, lane);
+    entangleTransitions(root, current, lane);// 纠缠转换
   }
 
   return lane;

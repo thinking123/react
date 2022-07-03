@@ -72,7 +72,7 @@ export const setRefreshHandler = (handler: RefreshHandler | null): void => {
 
 export function resolveFunctionForHotReloading(type: any): any {
   if (__DEV__) {
-    if (resolveFamily === null) {
+    if (resolveFamily === null) { // null
       // Hot reloading is disabled.
       return type;
     }

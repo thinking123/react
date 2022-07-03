@@ -56,7 +56,6 @@ describe('ReactDOM', () => {
             setSb(pre => pre + 1);
           }}>
           {sb}
-          {memoSb}
         </div>
       );
     }

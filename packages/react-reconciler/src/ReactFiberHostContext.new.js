@@ -46,6 +46,7 @@ function getRootHostContainer(): Container {
 function pushHostContainer(fiber: Fiber, nextRootInstance: Container) {
   // Push current root instance onto the stack;
   // This allows us to reset root when portals are popped.
+  // rootInstanceStackCursor.current === container(id === root)
   push(rootInstanceStackCursor, nextRootInstance, fiber);
   // Track the context and the Fiber that provided it.
   // This enables us to pop only Fibers that provide unique contexts.
@@ -107,7 +108,7 @@ function popHostContext(fiber: Fiber): void {
   if (contextFiberStackCursor.current !== fiber) {
     return;
   }
-
+  //{namespace: , ancestorInfo:}
   pop(contextStackCursor, fiber);
   pop(contextFiberStackCursor, fiber);
 }

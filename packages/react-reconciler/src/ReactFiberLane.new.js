@@ -257,7 +257,7 @@ export function getNextLanes(root: FiberRoot, wipLanes: Lanes): Lanes {
   }
 
   if (
-    allowConcurrentByDefault &&
+    allowConcurrentByDefault && // true
     (root.current.mode & ConcurrentUpdatesByDefaultMode) !== NoMode
   ) {
     // Do nothing, use the lanes as they were assigned.
@@ -291,7 +291,7 @@ export function getNextLanes(root: FiberRoot, wipLanes: Lanes): Lanes {
   // For those exceptions where entanglement is semantically important, like
   // useMutableSource, we should ensure that there is no partial work at the
   // time we apply the entanglement.
-  const entangledLanes = root.entangledLanes;
+  const entangledLanes = root.entangledLanes;// 纠缠车道
   if (entangledLanes !== NoLanes) {
     const entanglements = root.entanglements;
     let lanes = nextLanes & entangledLanes;
@@ -406,6 +406,8 @@ export function markStarvedLanesAsExpired(
   // Iterate through the pending lanes and check if we've reached their
   // expiration time. If so, we'll assume the update is being starved and mark
   // it as expired to force it to finish.
+  // 判断 pending（挂起）车道 是否达到了过期时间，如果超过过期时间，说明车道已经被占用，标记
+  // 这种车道已经过期
   let lanes = pendingLanes;
   while (lanes > 0) {
     // 返回0b00100100 : 最大的 不是 0 的 index
@@ -425,6 +427,7 @@ export function markStarvedLanesAsExpired(
       ) {
         // Assumes timestamps are monotonically increasing.
         // 重新计算过期时间 ,SyncLane ，expirationTime = currentTime + 250
+        //init: [250,0,0,...]
         expirationTimes[index] = computeExpirationTime(lane, currentTime);
       }
     } else if (expirationTime <= currentTime) {
@@ -591,11 +594,13 @@ export function markRootUpdated(
   updateLane: Lane,
   eventTime: number,
 ) {
+  // 有更新设置 pendingLanes
   root.pendingLanes |= updateLane;
 
   // If there are any suspended transitions, it's possible this new update
   // could unblock them. Clear the suspended lanes so that we can try rendering
   // them again.
+  // 如果有暂停的更新，用现在的更新，更新这个状态，删除暂停状态
   //
   // TODO: We really only need to unsuspend only lanes that are in the
   // `subtreeLanes` of the updated fiber, or the update lanes of the return
@@ -605,7 +610,7 @@ export function markRootUpdated(
   // We don't do this if the incoming update is idle, because we never process
   // idle updates until after all the regular updates have finished; there's no
   // way it could unblock a transition.
-  if (updateLane !== IdleLane) { // IdleLane === 0b010...
+  if (updateLane !== IdleLane) { // IdleLane === 0b0100000000000000000000000000000
     root.suspendedLanes = NoLanes;
     root.pingedLanes = NoLanes;
   }
@@ -649,8 +654,9 @@ export function markRootMutableRead(root: FiberRoot, updateLane: Lane) {
 // bit1 & ~bit2 === bit1 - bit2 , bit 减法 : 101 & ~100 => 101 & 011 => 001
 // 设置已经完成的 lane
 export function markRootFinished(root: FiberRoot, remainingLanes: Lanes) {
+  // pendingLanes 删除不是 剩余的 lane remainingLanes === 已经完成的，不是pending 的lane
   const noLongerPendingLanes = root.pendingLanes & ~remainingLanes;
-
+  // 用剩余的 lane 设置pending lanes
   root.pendingLanes = remainingLanes;
 
   // Let's try everything again
@@ -843,7 +849,7 @@ export function getTransitionsForLanes(
   lanes: Lane | Lanes,
 ): Array<Transition> | null {
   if (!enableTransitionTracing) {
-    return null;
+    return null; // init return
   }
 
   const transitionsForLanes = [];

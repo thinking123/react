@@ -51,9 +51,10 @@ export function flushSyncCallbacksOnlyInLegacyMode() {
 
 export function flushSyncCallbacks() {
   //init isFlushingSyncQueue == false
+  // syncQueue => scheduleLegacySyncCallback 插入
   if (!isFlushingSyncQueue && syncQueue !== null) {
     // Prevent re-entrance.
-    isFlushingSyncQueue = true;
+    isFlushingSyncQueue = true; //刷新同步队列
     let i = 0;
     const previousUpdatePriority = getCurrentUpdatePriority();
     try {

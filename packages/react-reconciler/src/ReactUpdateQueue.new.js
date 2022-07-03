@@ -221,12 +221,24 @@ export function enqueueUpdate<State>(
       firstBaseUpdate: null,
       lastBaseUpdate: null,
       shared: {
-        pending: null,
+        pending: null, // pending -> update
         interleaved: null,
         lanes: NoLanes,
       },
       effects: null,
     }
+
+
+   update = {
+    eventTime,
+    lane,
+
+    tag: UpdateState, // 0
+    payload: null, // payload -> {element : {$$typeof , ...}}
+    callback: null,
+
+    next: null,
+  };
   */
   const updateQueue = fiber.updateQueue;
   if (updateQueue === null) {
@@ -394,7 +406,7 @@ function getStateFromUpdate<State>(
   instance: any,
 ): any {
   switch (update.tag) {
-    case ReplaceState: {
+    case ReplaceState: { // 1
       const payload = update.payload;
       if (typeof payload === 'function') {
         // Updater function
@@ -421,13 +433,13 @@ function getStateFromUpdate<State>(
       // State object
       return payload;
     }
-    case CaptureUpdate: {
+    case CaptureUpdate: { // 3
       workInProgress.flags =
         (workInProgress.flags & ~ShouldCapture) | DidCapture;
     }
     // Intentional fallthrough
-    case UpdateState: {
-      const payload = update.payload;
+    case UpdateState: { // 0
+      const payload = update.payload; // {$$typeof , type , ...}
       let partialState;
       if (typeof payload === 'function') {
         // Updater function
@@ -460,7 +472,7 @@ function getStateFromUpdate<State>(
       // Merge the partial state and the previous state.
       return assign({}, prevState, partialState);
     }
-    case ForceUpdate: {
+    case ForceUpdate: { // 2
       hasForceUpdate = true;
       return prevState;
     }
@@ -507,6 +519,7 @@ shared:{pending: {}, interleaved: null, lanes: 0}
   //pendingQueue.next === pendingQueue 循环列表
     const lastPendingUpdate = pendingQueue;
     const firstPendingUpdate = lastPendingUpdate.next;
+    // 打断循环链表 : firstPendingUpdate -> ... -> lastPendingUpdate
     lastPendingUpdate.next = null;
     // Append pending updates to base queue
     if (lastBaseUpdate === null) {
@@ -526,6 +539,7 @@ shared:{pending: {}, interleaved: null, lanes: 0}
       // This is always non-null on a ClassComponent or HostRoot
       const currentQueue: UpdateQueue<State> = (current.updateQueue: any);
       const currentLastBaseUpdate = currentQueue.lastBaseUpdate;
+      // 设置 原始 fiber
       if (currentLastBaseUpdate !== lastBaseUpdate) {
         if (currentLastBaseUpdate === null) {
           currentQueue.firstBaseUpdate = firstPendingUpdate;
@@ -598,11 +612,11 @@ shared:{pending: {}, interleaved: null, lanes: 0}
         // Process this update.
         newState = getStateFromUpdate(
           workInProgress,
-          queue,
-          update,
-          newState,
-          props,
-          instance,
+          queue, // queue === updateQueue
+          update, // update === updateQueue.shared.pending
+          newState, // newState === queue.baseState
+          props, // null
+          instance, // null
         );
         const callback = update.callback;
         if (
@@ -673,6 +687,7 @@ shared:{pending: {}, interleaved: null, lanes: 0}
     // that regardless.
     markSkippedUpdateLanes(newLanes);
     workInProgress.lanes = newLanes;
+    // 设置了 element : memoizedState = {cache,element,isDehy,pendingxx,transitions}
     workInProgress.memoizedState = newState;
   }
 

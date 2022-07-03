@@ -20,13 +20,13 @@ export function getIntrinsicNamespace(type: string): string {
       return HTML_NAMESPACE;
   }
 }
-
 export function getChildNamespace(
   parentNamespace: string | null,
   type: string,
 ): string {
   if (parentNamespace == null || parentNamespace === HTML_NAMESPACE) {
     // No (or default) parent namespace: potential entry point.
+    // 获取内部命名空间
     return getIntrinsicNamespace(type);
   }
   if (parentNamespace === SVG_NAMESPACE && type === 'foreignObject') {

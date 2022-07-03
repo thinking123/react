@@ -171,8 +171,8 @@ export function createFiberRoot(
   uninitializedFiber.stateNode = root;
 
   if (enableCache) { // true
-    const initialCache = createCache();
-    retainCache(initialCache); // 保存 cache
+    const initialCache = createCache(); // {controller,data,refCount}
+    retainCache(initialCache); // 保存 cache : refCount++
 
     // The pooledCache is a fresh cache instance that is used temporarily
     // for newly mounted boundaries during a render. In general, the
@@ -182,7 +182,7 @@ export function createFiberRoot(
     // cache is distinct from the main memoizedState.cache, it must be
     // retained separately.
     root.pooledCache = initialCache;
-    retainCache(initialCache);
+    retainCache(initialCache); // refCount++
     const initialState: RootState = {
       element: initialChildren, // null
       isDehydrated: hydrate, // false
@@ -190,6 +190,7 @@ export function createFiberRoot(
       transitions: null,
       pendingSuspenseBoundaries: null,
     };
+    // memoizedState(记忆状态)
     uninitializedFiber.memoizedState = initialState;
   } else {
     const initialState: RootState = {

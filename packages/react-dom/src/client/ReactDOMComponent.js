@@ -111,12 +111,14 @@ if (__DEV__) {
     // @see https://electronjs.org/docs/api/webview-tag
     webview: true,
   };
-
+  // 校验 props 格式
   validatePropertiesInDevelopment = function(type, props) {
     validateARIAProperties(type, props);
     validateInputProperties(type, props);
     validateUnknownProperties(type, props, {
+      // registrationNameDependencies = [{onClick:['click']} , ...]
       registrationNameDependencies,
+      // possibleRegistrationNames = {onclick:'onClick'}
       possibleRegistrationNames,
     });
   };
@@ -330,6 +332,7 @@ function setInitialDOMProperties(
       // We could have excluded it in the property list instead of
       // adding a special case here, but then it wouldn't be emitted
       // on server rendering (but we *do* want to emit it in SSR).
+      // registrationNameDependencies = {onClick:["click"] , ... }
     } else if (registrationNameDependencies.hasOwnProperty(propKey)) {
       if (nextProp != null) {
         if (__DEV__ && typeof nextProp !== 'function') {
@@ -366,7 +369,7 @@ function updateDOMProperties(
     }
   }
 }
-
+// 创建 tag ( div , ...)对应的 html
 export function createElement(
   type: string,
   props: Object,
@@ -377,16 +380,19 @@ export function createElement(
 
   // We create tags in the namespace of their parent container, except HTML
   // tags get no namespace.
+  // 返回 rootContainerElement 的 document
   const ownerDocument: Document = getOwnerDocumentFromRootContainer(
     rootContainerElement,
   );
   let domElement: Element;
   let namespaceURI = parentNamespace;
   if (namespaceURI === HTML_NAMESPACE) {
+    // 获取内部命名空间
     namespaceURI = getIntrinsicNamespace(type);
   }
   if (namespaceURI === HTML_NAMESPACE) {
     if (__DEV__) {
+      // 是否是自定义 组件 tag
       isCustomComponentTag = isCustomComponent(type, props);
       // Should this check be gated by parent namespace? Not sure we want to
       // allow <SVG> or <mATH>.
@@ -405,7 +411,7 @@ export function createElement(
       // set to true and it does not execute
       const div = ownerDocument.createElement('div');
       if (__DEV__) {
-        if (enableTrustedTypesIntegration && !didWarnScriptTags) {
+        if (enableTrustedTypesIntegration && !didWarnScriptTags) { // false
           console.error(
             'Encountered a script tag while rendering React component. ' +
               'Scripts inside React components are never executed when rendering ' +
@@ -491,6 +497,7 @@ export function setInitialProperties(
 ): void {
   const isCustomComponentTag = isCustomComponent(tag, rawProps);
   if (__DEV__) {
+    // 校验props 格式
     validatePropertiesInDevelopment(tag, rawProps);
   }
 

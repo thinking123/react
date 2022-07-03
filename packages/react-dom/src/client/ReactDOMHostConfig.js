@@ -203,10 +203,10 @@ export function getPublicInstance(instance: Instance): * {
 }
 
 export function prepareForCommit(containerInfo: Container): Object | null {
-  eventsEnabled = ReactBrowserEventEmitterIsEnabled();
+  eventsEnabled = ReactBrowserEventEmitterIsEnabled(); // true
   selectionInformation = getSelectionInformation();
   let activeInstance = null;
-  if (enableCreateEventHandleAPI) {
+  if (enableCreateEventHandleAPI) { // true
     const focusedElem = selectionInformation.focusedElem;
     if (focusedElem !== null) {
       activeInstance = getClosestInstanceFromNode(focusedElem);
@@ -243,16 +243,17 @@ export function resetAfterCommit(containerInfo: Container): void {
 }
 
 export function createInstance(
-  type: string,
-  props: Props,
-  rootContainerInstance: Container,
-  hostContext: HostContext,
-  internalInstanceHandle: Object,
+  type: string, // fiber type : div ,...
+  props: Props, // fiber props
+  rootContainerInstance: Container, // id=root , container
+  hostContext: HostContext, // {namespace:,}
+  internalInstanceHandle: Object, //  fiber
 ): Instance {
   let parentNamespace: string;
   if (__DEV__) {
     // TODO: take namespace into account when validating.
     const hostContextDev = ((hostContext: any): HostContextDev);
+    // tag 是否嵌套在正确的 parent-tag下
     validateDOMNesting(type, null, hostContextDev.ancestorInfo);
     if (
       typeof props.children === 'string' ||
@@ -265,17 +266,21 @@ export function createInstance(
       );
       validateDOMNesting(null, string, ownAncestorInfo);
     }
+    // 'http://www.w3.org/1999/xhtml'
     parentNamespace = hostContextDev.namespace;
   } else {
     parentNamespace = ((hostContext: any): HostContextProd);
   }
+  // 创建 type => div
   const domElement: Instance = createElement(
     type,
     props,
     rootContainerInstance,
     parentNamespace,
   );
+  // 在对应的 tag (div) 保存 fiber , tag[internalInstanceKey] = fiber
   precacheFiberNode(internalInstanceHandle, domElement);
+  // 在对应的 tag (div) 保存 props , tag[internalPropsKey] = props
   updateFiberProps(domElement, props);
   return domElement;
 }

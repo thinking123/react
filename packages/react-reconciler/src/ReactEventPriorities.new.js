@@ -33,7 +33,7 @@ export function getCurrentUpdatePriority(): EventPriority {
 }
 
 export function setCurrentUpdatePriority(newPriority: EventPriority) {
-  // 当前更新优先级
+  // 当前更新优先级 , init currentUpdatePriority === SyncLane === 0b01
   currentUpdatePriority = newPriority;
 }
 

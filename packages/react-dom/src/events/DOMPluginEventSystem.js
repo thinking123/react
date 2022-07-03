@@ -325,10 +325,12 @@ export function listenToNonDelegatedEvent(
 
 export function listenToNativeEvent(
   domEventName: DOMEventName,
-  isCapturePhaseListener: boolean, // 是否在 capture 的时候执行 callback
+  isCapturePhaseListener: boolean, //不是委托事件 === false, 是否在 capture 的时候执行 callback
   target: EventTarget,
 ): void {
   if (__DEV__) {
+    // 委托事件  isCapturePhaseListener === false
+    //不是委托事件  isCapturePhaseListener === true
     if (nonDelegatedEvents.has(domEventName) && !isCapturePhaseListener) {
       console.error(
         'Did not expect a listenToNativeEvent() call for "%s" in the bubble phase. ' +
@@ -340,8 +342,9 @@ export function listenToNativeEvent(
 
   let eventSystemFlags = 0;
   if (isCapturePhaseListener) {
-    eventSystemFlags |= IS_CAPTURE_PHASE;
+    eventSystemFlags |= IS_CAPTURE_PHASE; // IS_CAPTURE_PHASE == 1 << 2 ,0b100
   }
+  //添加 event ,addEventListener(type , fun , {passive ,capture})
   addTrappedEventListener(
     target,
     domEventName,
@@ -383,6 +386,16 @@ const listeningMarker =
     .toString(36)
     .slice(2);
 // 用顶层容器监听 event ,或者 document(selectionchange)
+/*
+ allNativeEvents:
+
+ ["beforeblur","afterblur","abort","auxclick","cancel","canplay","canplaythrough","click","close","contextmenu","copy","cut","drag","dragend","dragenter","dragexit","dragleave","dragover","dragstart","drop","durationchange","emptied","encrypted","ended","error","gotpointercapture","input","invalid","keydown","keypress","keyup","load","loadeddata","loadedmetadata","loadstart","lostpointercapture","mousedown","mousemove","mouseout","mouseover","mouseup","paste","pause","play","playing","pointercancel","pointerdown","pointermove","pointerout","pointerover","pointerup","progress","ratechange","reset","resize","seeked","seeking","stalled","submit","suspend","timeupdate","touchcancel","touchend","touchstart","volumechange","scroll","toggle","touchmove","waiting","wheel","animationend","animationiteration","animationstart","dblclick","focusin","focusout","transitionend","change","selectionchange","compositionend","textInput","compositionstart","compositionupdate"]
+
+nonDelegatedEvents:
+
+["cancel","close","invalid","load","scroll","toggle","abort","canplay","canplaythrough","durationchange","emptied","encrypted","ended","error","loadeddata","loadedmetadata","loadstart","pause","play","playing","progress","ratechange","resize","seeked","seeking","stalled","suspend","timeupdate","volumechange","waiting"]
+
+*/
 export function listenToAllSupportedEvents(rootContainerElement: EventTarget) {
   // rootContainerElement 绑定 html event ， listeningMarker 是否已经绑定
   if (!(rootContainerElement: any)[listeningMarker]) {

@@ -208,7 +208,7 @@ let appendAllChildren;
 let updateHostContainer;
 let updateHostComponent;
 let updateHostText;
-if (supportsMutation) {
+if (supportsMutation) { // true
   // Mutation mode
 
   appendAllChildren = function(
@@ -649,7 +649,7 @@ function bubbleProperties(completedWork: Fiber) {
 
   if (!didBailout) {
     // Bubble up the earliest expiration time.
-    if (enableProfilerTimer && (completedWork.mode & ProfileMode) !== NoMode) {
+    if (enableProfilerTimer && (completedWork.mode & ProfileMode) !== NoMode) { // false
       // In profiling mode, resetChildExpirationTime is also used to reset
       // profiler durations.
       let actualDuration = completedWork.actualDuration;
@@ -774,7 +774,7 @@ function completeWork(
     case IndeterminateComponent:
     case LazyComponent:
     case SimpleMemoComponent:
-    case FunctionComponent:
+    case FunctionComponent: // 0 , function App(){}
     case ForwardRef:
     case Fragment:
     case Mode:
@@ -791,10 +791,11 @@ function completeWork(
       bubbleProperties(workInProgress);
       return null;
     }
+    //Fiber , mode === HostRoot
     case HostRoot: {
       const fiberRoot = (workInProgress.stateNode: FiberRoot);
 
-      if (enableTransitionTracing) {
+      if (enableTransitionTracing) { // false
         const transitions = getWorkInProgressTransitions();
         // We set the Passive flag here because if there are new transitions,
         // we will need to schedule callbacks and process the transitions,
@@ -828,7 +829,7 @@ function completeWork(
         // If we hydrated, pop so that we can delete any remaining children
         // that weren't hydrated.
         const wasHydrated = popHydrationState(workInProgress);
-        if (wasHydrated) {
+        if (wasHydrated) { // false
           // If we hydrated, then we'll need to schedule an update for
           // the commit side-effects on the root.
           markUpdate(workInProgress);
@@ -905,7 +906,7 @@ function completeWork(
         // or completeWork depending on whether we want to add them top->down or
         // bottom->up. Top->down is faster in IE11.
         const wasHydrated = popHydrationState(workInProgress);
-        if (wasHydrated) {
+        if (wasHydrated) { // false
           // TODO: Move this and createInstance step into the beginPhase
           // to consolidate.
           if (
@@ -920,6 +921,7 @@ function completeWork(
             markUpdate(workInProgress);
           }
         } else {
+          // 创建 tag (div)
           const instance = createInstance(
             type,
             newProps,
@@ -930,6 +932,7 @@ function completeWork(
 
           appendAllChildren(instance, workInProgress, false, false);
 
+          // fiber.stateNode = tag (div)
           workInProgress.stateNode = instance;
 
           // Certain renderers require commit-time effects for initial mount.

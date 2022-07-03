@@ -1278,9 +1278,13 @@ function updateHostRoot(current, workInProgress, renderLanes) {
   }
 // todo
   const nextProps = workInProgress.pendingProps;
+  /*
+memoizedState === {"element":null,"isDehydrated":false,"cache":{"controller":{},"data":{},"refCount":2},"transitions":null,"pendingSuspenseBoundaries":null}
+  */
   const prevState = workInProgress.memoizedState;
   const prevChildren = prevState.element;
   cloneUpdateQueue(current, workInProgress);
+  //设置 memoizedState , element = {$$typeof,...}
   processUpdateQueue(workInProgress, nextProps, null, renderLanes);
 
   const nextState: RootState = workInProgress.memoizedState;
@@ -1383,12 +1387,13 @@ function updateHostRoot(current, workInProgress, renderLanes) {
       }
     }
   } else {
-    // Root is not dehydrated. Either this is a client-only root, or it
+    // Root is not dehydrated(脱水). Either this is a client-only root, or it
     // already hydrated.
     resetHydrationState();
     if (nextChildren === prevChildren) {
       return bailoutOnAlreadyFinishedWork(current, workInProgress, renderLanes);
     }
+    // reconcile (调和)
     reconcileChildren(current, workInProgress, nextChildren, renderLanes);
   }
   return workInProgress.child;
@@ -1607,7 +1612,7 @@ function mountIncompleteClassComponent(
 function mountIndeterminateComponent(
   _current,
   workInProgress,
-  Component,
+  Component, //  init Component  === function App{}
   renderLanes,
 ) {
   resetSuspendedCurrentOnMountInLegacyMode(_current, workInProgress);
@@ -1615,7 +1620,7 @@ function mountIndeterminateComponent(
   const props = workInProgress.pendingProps;
   let context;
   if (!disableLegacyContext) { // disableLegacyContext === false
-    const unmaskedContext = getUnmaskedContext(
+    const unmaskedContext = getUnmaskedContext( // Unmasked 未屏蔽
       workInProgress,
       Component,
       false,
@@ -1675,7 +1680,7 @@ function mountIndeterminateComponent(
     );
     hasId = checkDidRenderIdHook();
   }
-  if (enableSchedulingProfiler) {
+  if (enableSchedulingProfiler) { // true
     markComponentRenderStopped();
   }
 
@@ -1769,6 +1774,7 @@ function mountIndeterminateComponent(
     );
   } else {
     // Proceed under the assumption that this is a function component
+    // Function 组件
     workInProgress.tag = FunctionComponent;
     if (__DEV__) {
       if (disableLegacyContext && Component.contextTypes) { // false
@@ -1803,7 +1809,7 @@ function mountIndeterminateComponent(
     if (getIsHydrating() && hasId) {
       pushMaterializedTreeId(workInProgress);
     }
-
+    //  渲染 children
     reconcileChildren(null, workInProgress, value, renderLanes);
     if (__DEV__) {
       validateFunctionComponentInDev(workInProgress, Component);
@@ -3692,8 +3698,8 @@ function attemptEarlyBailoutIfNoScheduledUpdate(
 }
 
 function beginWork(
-  current: Fiber | null,
-  workInProgress: Fiber,
+  current: Fiber | null, // 原始 fiber
+  workInProgress: Fiber, // fiber.alternate
   renderLanes: Lanes,
 ): Fiber | null {
   if (__DEV__) {

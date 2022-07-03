@@ -31,6 +31,8 @@ function isEmpty(): boolean {
   return index === -1;
 }
 
+// 从 valueStack 返回最后一个(pop) 设置 cursor.current
+// valueStack 删除 返回的 index
 function pop<T>(cursor: StackCursor<T>, fiber: Fiber): void {
   if (index < 0) {
     if (__DEV__) {
@@ -56,6 +58,10 @@ function pop<T>(cursor: StackCursor<T>, fiber: Fiber): void {
   index--;
 }
 
+// valueStack = []
+// fiberStack = []
+// cursor.current 入栈
+// 设置 cursor.curren = value
 function push<T>(cursor: StackCursor<T>, value: T, fiber: Fiber): void {
   index++;
 

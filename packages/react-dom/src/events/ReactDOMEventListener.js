@@ -91,13 +91,13 @@ export function createEventListenerWrapperWithPriority(
   const eventPriority = getEventPriority(domEventName);
   let listenerWrapper;
   switch (eventPriority) {
-    case DiscreteEventPriority: // click event
+    case DiscreteEventPriority: // [click,...]
       listenerWrapper = dispatchDiscreteEvent;
       break;
-    case ContinuousEventPriority:
+    case ContinuousEventPriority: // [drag,...]
       listenerWrapper = dispatchContinuousEvent;
       break;
-    case DefaultEventPriority:
+    case DefaultEventPriority: // [message if,...]
     default:
       listenerWrapper = dispatchEvent;
       break;

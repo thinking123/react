@@ -22,6 +22,7 @@ function validateProperty(tagName, name) {
 
     if (rARIACamel.test(name)) {
       const ariaName = 'aria-' + name.slice(4).toLowerCase();
+      // validAriaProperties: [aria-xxx,...]属性
       const correctName = validAriaProperties.hasOwnProperty(ariaName)
         ? ariaName
         : null;
@@ -108,7 +109,7 @@ function warnInvalidARIAProps(type, props) {
     }
   }
 }
-
+// 校验 [aria-xxx,...]属性 是否格式正确
 export function validateProperties(type, props) {
   if (isCustomComponent(type, props)) {
     return;

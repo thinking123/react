@@ -246,7 +246,7 @@ export function resolveLazyComponentTag(Component: Function): WorkTag {
 }
 
 // This is used to create an alternate fiber to do work on.
-// 创建 alternate 或者 reset alternate 返回
+// 创建 （alternate备用） 或者 reset alternate 返回
 export function createWorkInProgress(current: Fiber, pendingProps: any): Fiber {
   let workInProgress = current.alternate; // 双缓冲 （alternate备用）
   if (workInProgress === null) {
@@ -254,7 +254,7 @@ export function createWorkInProgress(current: Fiber, pendingProps: any): Fiber {
     // only ever need at most two versions of a tree. We pool the "other" unused
     // node that we're free to reuse. This is lazily created to avoid allocating
     // extra objects for things that are never updated. It also allow us to
-    // reclaim the extra memory if needed.
+    // reclaim(回收) the extra memory if needed.
     workInProgress = createFiber(
       current.tag,
       pendingProps,
@@ -485,6 +485,7 @@ export function createFiberFromTypeAndProps(
       }
     } else {
       if (__DEV__) {
+        // resolvedType = <App/> = function
         resolvedType = resolveFunctionForHotReloading(resolvedType);
       }
     }
@@ -589,7 +590,7 @@ export function createFiberFromTypeAndProps(
       }
     }
   }
-
+  // hooks type : IndeterminateComponent
   const fiber = createFiber(fiberTag, pendingProps, key, mode);
   fiber.elementType = type;
   fiber.type = resolvedType;

@@ -108,7 +108,7 @@ function noopOnRecoverableError() {
   // This isn't reachable because onRecoverableError isn't called in the
   // legacy API.
 }
-
+// 上一级  legacyRenderSubtreeIntoContainer -> 上一级 ReactDOM.render()
 function legacyCreateRootFromDOMContainer(
   container: Container, // root div html
   initialChildren: ReactNodeList, // {props , type , key , ref , ....}
@@ -166,14 +166,18 @@ function legacyCreateRootFromDOMContainer(
     // reconciler（调和器） 创建Root(FiberRoot) 和 Root.current = uninitializedFiber(FiberNode (type = HostRoot))
     const root = createContainer(
       container,
-      LegacyRoot,
+      LegacyRoot, // 创建Root tag 类型 === LegacyRoot
       null, // hydrationCallbacks
       false, // isStrictMode
       false, // concurrentUpdatesByDefaultOverride,
       '', // identifierPrefix
-      noopOnRecoverableError, // onRecoverableError
+      noopOnRecoverableError, // onRecoverableError === noop
       null, // transitionCallbacks
     );
+
+    //在 container 上设置 FiberRoot 和 FiberHost
+    // container._reactRootContainer === FiberRootNode(root , tag === LegacyRoot)
+    // container.internalContainerInstanceKey === FiberNode(host ， tag === HostRoot)
     container._reactRootContainer = root;
     // 在 react interal key 保存 fiberNode
     // container 是html root,  container[react interal key] = fiberNode
@@ -186,6 +190,11 @@ function legacyCreateRootFromDOMContainer(
 
     // Initial mount should not be batched.
     flushSync(() => {
+      // init
+      // initialChildren === <App/> {$$typeof:xxx,type:AppFun,...}
+      // root === FiberRootNode
+      // parentComponent === null
+      // callback === null
       updateContainer(initialChildren, root, parentComponent, callback);
     });
 
@@ -205,7 +214,7 @@ function warnOnInvalidCallback(callback: mixed, callerName: string): void {
     }
   }
 }
-
+// 上一级函数: ReactDOM.render()
 function legacyRenderSubtreeIntoContainer(
   parentComponent: ?React$Component<any, any>, // null
   children: ReactNodeList, // <App/>
@@ -219,7 +228,7 @@ function legacyRenderSubtreeIntoContainer(
     // callback 是否是 function
     warnOnInvalidCallback(callback === undefined ? null : callback, 'render');
   }
-
+  // _reactRootContainer 是FiberRoot
   const maybeRoot = container._reactRootContainer; // null
   let root: FiberRoot;
   if (!maybeRoot) {
@@ -318,6 +327,7 @@ export function hydrate(
   );
 }
 // ReactDOM.render(<APP/>, root = <div id="root"/> , callback = () => {})
+// 校验之后 : legacyRenderSubtreeIntoContainer()
 export function render(
   element: React$Element<any>, // root App 组件 typeof === function
   container: Container, // id="root" html 容器 ，ReactDom.render(<App/>,root)
