@@ -361,6 +361,8 @@ function ChildReconciler(shouldTrackSideEffects) {
     // placement for inserting new children.
     // shouldTrackSideEffects === true
     if (shouldTrackSideEffects && newFiber.alternate === null) {
+      // 创建的filber alternate === null , 设置flag === Placement
+      // 插入 fiber
       newFiber.flags |= Placement; // Placement === 0b10 === 2
     }
     return newFiber;
@@ -1272,7 +1274,7 @@ function ChildReconciler(shouldTrackSideEffects) {
       switch (newChild.$$typeof) {
         case REACT_ELEMENT_TYPE:
           return placeSingleChild(
-            // init 创建 currentFirstChild fiber
+            // init 创建 newChild fiber
             reconcileSingleElement(
               returnFiber, // init returnFiber == HostRoot.tag === 3
               currentFirstChild,

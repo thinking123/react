@@ -437,6 +437,8 @@ export function requestEventTime() {
     return currentEventTime;
   }
   // This is the first update since React yielded. Compute a new start time.
+  // now === performance.now() : 返回当前页面加载到现在的 高精度时间 毫秒:
+  // performance.now() === 20303.427000007
   currentEventTime = now();
   return currentEventTime;
 }
@@ -1457,14 +1459,15 @@ export function flushSync(fn) {
   }
 
   const prevExecutionContext = executionContext; // init executionContext 0
-  // 设置当前正在 Batch
+  // 设置当前正在 Batch , 执行批量操作
   executionContext |= BatchedContext; // BatchedContext 0b001
 
   const prevTransition = ReactCurrentBatchConfig.transition; //init transition null
-  const previousPriority = getCurrentUpdatePriority();
+  const previousPriority = getCurrentUpdatePriority(); // 当前更新优先级
 
   try {
     ReactCurrentBatchConfig.transition = null;
+    // DiscreteEventPriority(离散事件优先级)
     setCurrentUpdatePriority(DiscreteEventPriority); // === SyncLane : 0b000..01
     if (fn) {
       return fn();
@@ -1472,6 +1475,7 @@ export function flushSync(fn) {
       return undefined;
     }
   } finally {
+    //reset 优先级
     setCurrentUpdatePriority(previousPriority);
     ReactCurrentBatchConfig.transition = prevTransition;
 
@@ -1536,6 +1540,7 @@ function prepareFreshStack(root: FiberRoot, lanes: Lanes): Fiber {
   root.finishedLanes = NoLanes;
 
   const timeoutHandle = root.timeoutHandle;
+  // noTimeout === -1
   if (timeoutHandle !== noTimeout) { // false
     // The root previous suspended and scheduled a timeout to commit a fallback
     // state. Now that we have additional work, cancel the timeout.
@@ -1959,6 +1964,7 @@ function performUnitOfWork(unitOfWork: Fiber): void {
   let next;
   if (enableProfilerTimer && (unitOfWork.mode & ProfileMode) !== NoMode) {//false
     startProfilerTimer(unitOfWork);
+    // 返回下一个 child fiber
     next = beginWork(current, unitOfWork, subtreeRenderLanes);
     stopProfilerTimerIfRunningAndRecordDelta(unitOfWork, true);
   } else {
@@ -1968,11 +1974,13 @@ function performUnitOfWork(unitOfWork: Fiber): void {
   }
 
   resetCurrentDebugFiberInDEV();
+  // pendingProps(更新的props) ->  memoizedProps (保存上一次props)
   unitOfWork.memoizedProps = unitOfWork.pendingProps;
   if (next === null) {
     // If this doesn't spawn new work, complete the current work.
     completeUnitOfWork(unitOfWork);
   } else {
+    // 设置 下一个 child fiber === workInProgress
     workInProgress = next;
   }
 
@@ -3066,6 +3074,8 @@ if (__DEV__ && replayFailedUnitOfWorkWithInvokeGuardedCallback) { // true
     // dev 模式，temp dummyFiber 保存  unitOfWork 属性，调试
     // current === unitOfWork.alternate
     // originalWorkInProgressCopy === dummyFiber
+    // dummyFiber.tag === IndeterminateComponent
+    // dummyFiber.mode === NoMode
     const originalWorkInProgressCopy = assignFiberPropertiesInDEV(
       dummyFiber,
       unitOfWork,

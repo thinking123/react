@@ -304,6 +304,7 @@ export function reconcileChildren(
     // If we had any progressed work already, that is invalid at this point so
     // let's throw it out.
     // createFiber === workInProgress.child
+    // workInProgress.child -> child fiber
     workInProgress.child = reconcileChildFibers(
       workInProgress,
       current.child,
@@ -1612,7 +1613,7 @@ function mountIncompleteClassComponent(
 function mountIndeterminateComponent(
   _current,
   workInProgress,
-  Component, //  init Component  === function App{}
+  Component, //  init type === Component  === function App{}
   renderLanes,
 ) {
   resetSuspendedCurrentOnMountInLegacyMode(_current, workInProgress);

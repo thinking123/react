@@ -248,6 +248,7 @@ export function resolveLazyComponentTag(Component: Function): WorkTag {
 // This is used to create an alternate fiber to do work on.
 // 创建 （alternate备用） 或者 reset alternate 返回
 export function createWorkInProgress(current: Fiber, pendingProps: any): Fiber {
+  // workInProgress 是在内存中使用的fiber
   let workInProgress = current.alternate; // 双缓冲 （alternate备用）
   if (workInProgress === null) {
     // We use a double buffering pooling technique because we know that we'll
@@ -300,6 +301,8 @@ export function createWorkInProgress(current: Fiber, pendingProps: any): Fiber {
 
   // Reset all effects except static ones.
   // Static effects are not specific to a render.
+  // StaticMask = LayoutStatic | PassiveStatic | RefStatic;
+  // static flag ： 内存fiber 不是用来 render
   workInProgress.flags = current.flags & StaticMask;
   workInProgress.childLanes = current.childLanes;
   workInProgress.lanes = current.lanes;

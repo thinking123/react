@@ -221,7 +221,7 @@ let hookTypesUpdateIndexDev: number = -1;
 // the dependencies for Hooks that need them (e.g. useEffect or useMemo).
 // When true, such Hooks will always be "remounted". Only used during hot reload.
 let ignorePreviousDependencies: boolean = false;
-
+// push hook name to hookTypesDev
 function mountHookTypesDev() {
   if (__DEV__) {
     const hookName = ((currentHookNameInDev: any): HookType);
@@ -435,7 +435,7 @@ export function renderWithHooks<Props, SecondArg>(
         ? HooksDispatcherOnMount
         : HooksDispatcherOnUpdate;
   }
-
+  // secondArg === context
   let children = Component(props, secondArg);
 
   // Check if there was a render phase update
@@ -1515,8 +1515,9 @@ function mountState<S>(
 ): [S, Dispatch<BasicStateAction<S>>] {
   /*
  currentlyRenderingFiber.memoizedState = workInProgressHook = hook = {
+   // initialState
     memoizedState: null,
-
+  // initialState
     baseState: null,
     baseQueue: null,
     queue: null,
@@ -1581,6 +1582,7 @@ function pushEffect(tag, create, destroy, deps) {
 
     */
     componentUpdateQueue = createFunctionComponentUpdateQueue();
+    // 更新 fiber updatequeue
     currentlyRenderingFiber.updateQueue = (componentUpdateQueue: any);
     componentUpdateQueue.lastEffect = effect.next = effect;
   } else {
@@ -1696,6 +1698,7 @@ function mountEffectImpl(fiberFlags, hookFlags, create, deps): void {
   const nextDeps = deps === undefined ? null : deps;
   currentlyRenderingFiber.flags |= fiberFlags;
   hook.memoizedState = pushEffect(
+    // HasEffect === 1
     HookHasEffect | hookFlags,
     create,
     undefined,

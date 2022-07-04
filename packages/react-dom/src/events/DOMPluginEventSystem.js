@@ -392,7 +392,7 @@ const listeningMarker =
 
  ["beforeblur","afterblur","abort","auxclick","cancel","canplay","canplaythrough","click","close","contextmenu","copy","cut","drag","dragend","dragenter","dragexit","dragleave","dragover","dragstart","drop","durationchange","emptied","encrypted","ended","error","gotpointercapture","input","invalid","keydown","keypress","keyup","load","loadeddata","loadedmetadata","loadstart","lostpointercapture","mousedown","mousemove","mouseout","mouseover","mouseup","paste","pause","play","playing","pointercancel","pointerdown","pointermove","pointerout","pointerover","pointerup","progress","ratechange","reset","resize","seeked","seeking","stalled","submit","suspend","timeupdate","touchcancel","touchend","touchstart","volumechange","scroll","toggle","touchmove","waiting","wheel","animationend","animationiteration","animationstart","dblclick","focusin","focusout","transitionend","change","selectionchange","compositionend","textInput","compositionstart","compositionupdate"]
 
-nonDelegatedEvents:
+nonDelegatedEvents: 不会冒泡的事件 (can not capture and buble)
 
 ["cancel","close","invalid","load","scroll","toggle","abort","canplay","canplaythrough","durationchange","emptied","encrypted","ended","error","loadeddata","loadedmetadata","loadstart","pause","play","playing","progress","ratechange","resize","seeked","seeking","stalled","suspend","timeupdate","volumechange","waiting"]
 
@@ -405,6 +405,7 @@ export function listenToAllSupportedEvents(rootContainerElement: EventTarget) {
       // We handle selectionchange separately because it
       // doesn't bubble and needs to be on the document.
       if (domEventName !== 'selectionchange') {
+        // 不能委托的事件：不能通过 capture 和 buble 获取的event
         if (!nonDelegatedEvents.has(domEventName)) {
           listenToNativeEvent(domEventName, false, rootContainerElement);
         }
@@ -428,7 +429,7 @@ export function listenToAllSupportedEvents(rootContainerElement: EventTarget) {
     }
   }
 }
-
+ // 返回 listener 可以删除
 function addTrappedEventListener(
   targetContainer: EventTarget,
   domEventName: DOMEventName,

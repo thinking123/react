@@ -509,7 +509,7 @@ export function markRenderStopped(): void {
 export function markRenderScheduled(lane: Lane): void {
   if (enableSchedulingProfiler) {
     if (
-      injectedProfilingHooks !== null &&
+      injectedProfilingHooks !== null && // null
       typeof injectedProfilingHooks.markRenderScheduled === 'function'
     ) {
       injectedProfilingHooks.markRenderScheduled(lane);

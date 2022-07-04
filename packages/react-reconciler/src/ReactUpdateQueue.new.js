@@ -220,7 +220,8 @@ export function enqueueUpdate<State>(
       baseState: fiber.memoizedState, // {element,isDehydrated,cache,transitions,...}
       firstBaseUpdate: null,
       lastBaseUpdate: null,
-      shared: {
+      shared(sharedQueue): {
+        // init pending.next === pending
         pending: null, // pending -> update
         interleaved: null,
         lanes: NoLanes,
@@ -265,6 +266,7 @@ export function enqueueUpdate<State>(
     const pending = sharedQueue.pending;
     if (pending === null) {
       // This is the first update. Create a circular list.
+      // 循环链表
       update.next = update;
     } else {
       update.next = pending.next;
@@ -479,7 +481,9 @@ function getStateFromUpdate<State>(
   }
   return prevState;
 }
-
+// 计算 state
+// baseState ， firstBaseUpdate ， lastBaseUpdate
+// 从 shared.pending
 export function processUpdateQueue<State>(
   workInProgress: Fiber,
   props: any,
@@ -493,10 +497,16 @@ baseState:{element: null, isDehydrated: false, cache: {…}, transitions: null, 
 effects:null
 firstBaseUpdate:null
 lastBaseUpdate:null
-shared:{pending: {}, interleaved: null, lanes: 0}
+shared:{
+  // init pending.next === pending
+  pending: {},
+  interleaved: null, lanes: 0}
   }
 
   */
+ // 从 shard.pending 设置 firstBaseUpdate , lastBaseUpdate
+
+
   const queue: UpdateQueue<State> = (workInProgress.updateQueue: any);
 
   hasForceUpdate = false;
@@ -510,6 +520,7 @@ shared:{pending: {}, interleaved: null, lanes: 0}
   let lastBaseUpdate = queue.lastBaseUpdate;
 
   // Check if there are pending updates. If so, transfer them to the base queue.
+  // pendingQueue 循环链表
   let pendingQueue = queue.shared.pending;
   if (pendingQueue !== null) {
     queue.shared.pending = null;
@@ -522,6 +533,7 @@ shared:{pending: {}, interleaved: null, lanes: 0}
     // 打断循环链表 : firstPendingUpdate -> ... -> lastPendingUpdate
     lastPendingUpdate.next = null;
     // Append pending updates to base queue
+    // lastBaseUpdate 和 firstBaseUpdate -> shared.pending
     if (lastBaseUpdate === null) {
       firstBaseUpdate = firstPendingUpdate;
     } else {

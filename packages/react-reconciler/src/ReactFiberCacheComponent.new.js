@@ -148,6 +148,21 @@ export function pushCacheProvider(workInProgress: Fiber, cache: Cache) {
   if (!enableCache) {
     return;
   }
+  /*
+CacheContext = {
+      $$typeof: REACT_CONTEXT_TYPE,
+      // We don't use Consumer/Provider for Cache components. So we'll cheat.
+      Consumer: (null: any),
+      Provider: (null: any),
+      // We'll initialize these at the root.
+      _currentValue: (null: any),
+      _currentValue2: (null: any),
+      _threadCount: 0,
+      _defaultValue: (null: any),
+      _globalName: (null: any),
+    }
+
+  */
   pushProvider(workInProgress, CacheContext, cache);
 }
 

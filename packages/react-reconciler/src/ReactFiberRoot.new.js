@@ -99,7 +99,7 @@ function FiberRootNode(
   if (enableTransitionTracing) {// false
     this.transitionCallbacks = null;
     const transitionLanesMap = (this.transitionLanes = []);
-    for (let i = 0; i < TotalLanes; i++) {
+    for (let i = 0; i < TotalLanes; i++) { // TotalLanes === 31
       transitionLanesMap.push(null);
     }
   }
