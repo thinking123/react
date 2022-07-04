@@ -35,8 +35,18 @@ describe('ReactDOM', () => {
     // let count = 0;
     let buttonRef = React.createRef();
 
+    function Ch(props) {
+      return (
+        <div>
+          <div>
+            {props.name}
+            {props.uuid}
+          </div>
+        </div>
+      );
+    }
     function Parent() {
-      const [sb, setSb] = React.useState(0);
+      const [sb, setSb] = React.useState(10);
 
       React.useEffect(() => {
         console.log('log useEffect', sb);
@@ -56,6 +66,7 @@ describe('ReactDOM', () => {
             setSb(pre => pre + 1);
           }}>
           {sb}
+          <Ch name={sb} uuid={memoSb} />
         </div>
       );
     }
@@ -66,12 +77,12 @@ describe('ReactDOM', () => {
     buttonRef.current.dispatchEvent(
       new Event('click', {bubbles: true, cancelable: true}),
     );
-    buttonRef.current.dispatchEvent(
-      new Event('click', {bubbles: true, cancelable: true}),
-    );
-    buttonRef.current.dispatchEvent(
-      new Event('click', {bubbles: true, cancelable: true}),
-    );
+    // buttonRef.current.dispatchEvent(
+    //   new Event('click', {bubbles: true, cancelable: true}),
+    // );
+    // buttonRef.current.dispatchEvent(
+    //   new Event('click', {bubbles: true, cancelable: true}),
+    // );
 
     // Scheduler.unstable_flushAll();
     // await act(async () => {

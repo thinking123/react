@@ -11,6 +11,7 @@ import type {Props} from '../client/ReactDOMHostConfig';
 
 import {getFiberCurrentPropsFromNode} from '../client/ReactDOMComponentTree';
 
+//Interactive (交互的 )
 function isInteractive(tag: string): boolean {
   return (
     tag === 'button' ||

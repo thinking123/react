@@ -58,6 +58,8 @@ function extractEvents(
   eventSystemFlags: EventSystemFlags,
   targetContainer: EventTarget,
 ): void {
+  // topLevelEventsToReactNames= [{"click" => "onClick"},...]
+  //domEventName:click => reactName:onClick
   const reactName = topLevelEventsToReactNames.get(domEventName);
   if (reactName === undefined) {
     return;
@@ -157,7 +159,7 @@ function extractEvents(
       // Unknown event. This is used by createEventHandle.
       break;
   }
-
+  // 是否在 caputre 阶段触发
   const inCapturePhase = (eventSystemFlags & IS_CAPTURE_PHASE) !== 0;
   if (
     enableCreateEventHandleAPI &&

@@ -117,6 +117,7 @@ function extractEvents(
     targetContainer,
   );
   const shouldProcessPolyfillPlugins =
+  /// 0b111 === SHOULD_NOT_PROCESS_POLYFILL_EVENT_PLUGINS
     (eventSystemFlags & SHOULD_NOT_PROCESS_POLYFILL_EVENT_PLUGINS) === 0;
   // We don't process these events unless we are in the
   // event's native "bubble" phase, which means that we're
@@ -682,6 +683,7 @@ export function accumulateSinglePhaseListeners(
   nativeEvent: AnyNativeEvent,
 ): Array<DispatchListener> {
   const captureName = reactName !== null ? reactName + 'Capture' : null;
+  // click => onClickCapture
   const reactEventName = inCapturePhase ? captureName : reactName;
   let listeners: Array<DispatchListener> = [];
 
@@ -696,7 +698,7 @@ export function accumulateSinglePhaseListeners(
       lastHostComponent = stateNode;
 
       // createEventHandle listeners
-      if (enableCreateEventHandleAPI) {
+      if (enableCreateEventHandleAPI) { // true
         const eventHandlerListeners = getEventHandlerListeners(
           lastHostComponent,
         );

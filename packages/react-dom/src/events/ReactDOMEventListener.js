@@ -58,6 +58,7 @@ import {isRootDehydrated} from 'react-reconciler/src/ReactFiberShellHydration';
 const {ReactCurrentBatchConfig} = ReactSharedInternals;
 
 // TODO: can we stop exporting these?
+// dispatchEvent 是否执行
 export let _enabled = true;
 
 // This is exported in FB builds for use by legacy FB layer infra.
@@ -109,7 +110,9 @@ export function createEventListenerWrapperWithPriority(
     targetContainer,
   );
 }
-
+// domEventName , eventSystemFlags(如果是isCapturePhaseListener , === 4 (IS_CAPTURE_PHASE , click event )  ) , container
+//已经  bind 参数
+// nativeEvent 是浏览器的 event
 function dispatchDiscreteEvent(
   domEventName,
   eventSystemFlags,
@@ -120,7 +123,7 @@ function dispatchDiscreteEvent(
   const prevTransition = ReactCurrentBatchConfig.transition;
   ReactCurrentBatchConfig.transition = null;
   try {
-    setCurrentUpdatePriority(DiscreteEventPriority);
+    setCurrentUpdatePriority(DiscreteEventPriority);// DiscreteEventPriority === 1
     dispatchEvent(domEventName, eventSystemFlags, container, nativeEvent);
   } finally {
     setCurrentUpdatePriority(previousPriority);
@@ -155,7 +158,7 @@ export function dispatchEvent(
   if (!_enabled) {
     return;
   }
-  if (enableCapturePhaseSelectiveHydrationWithoutDiscreteEventReplay) {
+  if (enableCapturePhaseSelectiveHydrationWithoutDiscreteEventReplay) {//true
     dispatchEventWithEnableCapturePhaseSelectiveHydrationWithoutDiscreteEventReplay(
       domEventName,
       eventSystemFlags,
@@ -366,6 +369,7 @@ export function findInstanceBlockingEvent(
   let targetInst = getClosestInstanceFromNode(nativeEventTarget);
 
   if (targetInst !== null) {
+    // 返回  fiber
     const nearestMounted = getNearestMountedFiber(targetInst);
     if (nearestMounted === null) {
       // This tree has been unmounted already. Dispatch without a target.

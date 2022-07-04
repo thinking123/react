@@ -377,6 +377,7 @@ export function addTransitionCompleteCallbackToPendingTransition(
 }
 
 function resetRenderTimer() {
+  // RENDER_TIMEOUT_MS === 500
   workInProgressRootRenderTargetTime = now() + RENDER_TIMEOUT_MS;
 }
 
@@ -1397,6 +1398,7 @@ export function deferredUpdates<A>(fn: () => A): A {
 
 export function batchedUpdates<A, R>(fn: A => R, a: A): R {
   const prevExecutionContext = executionContext;
+  //BatchedContext === 1
   executionContext |= BatchedContext;
   try {
     return fn(a);
