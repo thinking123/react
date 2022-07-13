@@ -1,0 +1,22 @@
+{
+  // Use IntelliSense to learn about possible attributes.
+  // Hover to view descriptions of existing attributes.
+  // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": "debug react",
+      "program": "${workspaceFolder}/scripts/jest/jest-cli.js",
+      "request": "launch",
+      "skipFiles": [
+        "<node_internals>/**"
+      ],
+      "type": "pwa-node",
+      "args": [
+        "--debug",
+        "--",
+        "./packages/react-dom/src/__tests__/ReactDOM-test-ps.js"
+      ]
+    }
+  ]
+}
