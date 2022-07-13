@@ -1565,7 +1565,7 @@ function rerenderState<S>(
 
 function pushEffect(tag, create, destroy, deps) {
   const effect: Effect = {
-    tag,
+    tag, // HasEffect
     create,
     destroy,
     deps,

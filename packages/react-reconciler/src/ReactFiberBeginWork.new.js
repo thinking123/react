@@ -282,6 +282,7 @@ if (__DEV__) {
 export function reconcileChildren(
   current: Fiber | null,
   workInProgress: Fiber,
+  // nextChildren = nextProps.children
   nextChildren: any,
   renderLanes: Lanes,
 ) {
@@ -290,6 +291,7 @@ export function reconcileChildren(
     // won't update its child set by applying minimal side-effects. Instead,
     // we will add them all to the child before it gets rendered. That means
     // we can optimize this reconciliation pass by not tracking side-effects.
+    // current === null , init 的时候 shouldTrackSideEffects === false
     workInProgress.child = mountChildFibers(
       workInProgress,
       null,
@@ -305,6 +307,14 @@ export function reconcileChildren(
     // let's throw it out.
     // createFiber === workInProgress.child
     // workInProgress.child -> child fiber
+    // init 的时候FiberHost 的 current !== null , shouldTrackSideEffects === true
+    //  newFiber.flags |= _ReactFiberFlags.Placement;
+    // 创建 props.children , fibers
+    // 连接 [fiber1,fiber2,...]
+    //fiber1.return = workInProgress
+    //fiber2.return = workInProgress
+    //fiber2.sibing = fiber1
+    // workInProgress.child = fiber1
     workInProgress.child = reconcileChildFibers(
       workInProgress,
       current.child,
@@ -1423,6 +1433,7 @@ function updateHostComponent(
   workInProgress: Fiber,
   renderLanes: Lanes,
 ) {
+  // push contextFiberStackCursor(fiber) , contextStackCursor(context)
   pushHostContext(workInProgress);
 
   if (current === null) {
@@ -1434,8 +1445,9 @@ function updateHostComponent(
   const prevProps = current !== null ? current.memoizedProps : null;
 
   let nextChildren = nextProps.children;
+  //type === [textarea] , children === [string,number]
   const isDirectTextChild = shouldSetTextContent(type, nextProps);
-
+  //  isDirectTextChild 不用继续处理 child fiber
   if (isDirectTextChild) {
     // We special case a direct text child of a host node. This is a common
     // case. We won't handle it as a reified child. We will instead handle
@@ -1445,10 +1457,12 @@ function updateHostComponent(
   } else if (prevProps !== null && shouldSetTextContent(type, prevProps)) {
     // If we're switching from a direct text child to a normal child, or to
     // empty, we need to schedule the text content to be reset.
+    // 重新设置 text -> child fiber  , flags = ContentReset
     workInProgress.flags |= ContentReset;
   }
-
+  //  ref 设置 flats = Ref | RefStatic
   markRef(current, workInProgress);
+  // reconcile 就是创建workInProgress 对应child 的 fiber
   reconcileChildren(current, workInProgress, nextChildren, renderLanes);
   return workInProgress.child;
 }
@@ -1810,7 +1824,7 @@ function mountIndeterminateComponent(
     if (getIsHydrating() && hasId) {
       pushMaterializedTreeId(workInProgress);
     }
-    //  渲染 children
+    //  渲染 children (value)
     reconcileChildren(null, workInProgress, value, renderLanes);
     if (__DEV__) {
       validateFunctionComponentInDev(workInProgress, Component);
@@ -3812,7 +3826,7 @@ function beginWork(
         renderLanes,
       );
     }
-    case FunctionComponent: {
+    case FunctionComponent: { // FunctionComponent === 0
       const Component = workInProgress.type;
       const unresolvedProps = workInProgress.pendingProps;
       const resolvedProps =

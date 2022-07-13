@@ -414,10 +414,11 @@ if (__DEV__) {
       }
       childTag = '#text';
     }
-
+    // tag 是否正确: parentTag === tr , childTag === [th,td] ,是否能够嵌套
     const invalidParent = isTagValidWithParent(childTag, parentTag)
       ? null
       : parentInfo;
+      // 返回对于 childTag ，不正确的 parent tag
     const invalidAncestor = invalidParent
       ? null
       : findInvalidAncestorForTag(childTag, ancestorInfo);

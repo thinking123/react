@@ -332,6 +332,7 @@ function ChildReconciler(shouldTrackSideEffects) {
     newIndex: number,
   ): number {
     newFiber.index = newIndex;
+    // init not host , shouldTrackSideEffects === false
     if (!shouldTrackSideEffects) {
       // During hydration, the useId algorithm needs to know which fibers are
       // part of a list of children (arrays, iterators).
@@ -498,6 +499,7 @@ function ChildReconciler(shouldTrackSideEffects) {
       // Text nodes don't have keys. If the previous node is implicitly keyed
       // we can continue to replace it without aborting even if it is not a text
       // node.
+      // tag ==== HostText , pendingProps = {10}
       const created = createFiberFromText(
         '' + newChild,
         returnFiber.mode,
@@ -835,16 +837,19 @@ function ChildReconciler(shouldTrackSideEffects) {
     if (oldFiber === null) {
       // If we don't have any more existing children we can choose a fast path
       // since the rest will all be insertions.
+      // newIdx , lastPlacedIndex : 0
       for (; newIdx < newChildren.length; newIdx++) {
         const newFiber = createChild(returnFiber, newChildren[newIdx], lanes);
         if (newFiber === null) {
           continue;
         }
+        // flags = Forked
         lastPlacedIndex = placeChild(newFiber, lastPlacedIndex, newIdx);
         if (previousNewFiber === null) {
           // TODO: Move out of the loop. This only happens for the first run.
           resultingFirstChild = newFiber;
         } else {
+          // 设置 sibling , [filber1,fiber2.sibling === filber1]
           previousNewFiber.sibling = newFiber;
         }
         previousNewFiber = newFiber;
@@ -853,6 +858,7 @@ function ChildReconciler(shouldTrackSideEffects) {
         const numberOfForks = newIdx;
         pushTreeFork(returnFiber, numberOfForks);
       }
+      //return filber1
       return resultingFirstChild;
     }
 
@@ -1350,8 +1356,9 @@ function ChildReconciler(shouldTrackSideEffects) {
 
   return reconcileChildFibers;
 }
-
+// shouldTrackSideEffects === true
 export const reconcileChildFibers = ChildReconciler(true);
+// mount shouldTrackSideEffects === false
 export const mountChildFibers = ChildReconciler(false);
 
 export function cloneChildFibers(

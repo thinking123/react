@@ -1954,6 +1954,8 @@ function workLoopConcurrent() {
 // 备用fiber 和 current fiber 双向指针
 //fiber1.alternate = fiber2
 //fiber2.alternate = fiber1
+// 深度优先遍历 beginWork(创建对应的 fiber)，如果深度优先遍历到了 text ，完成beginwork ,开始 completeUnitOfWork
+//performUnitOfWork 完成: beginwork , completeUnitOfWork : 深度优先遍历
 function performUnitOfWork(unitOfWork: Fiber): void {
   // The current, flushed, state of this fiber is the alternate. Ideally
   // nothing should rely on this, but relying on it here means that we don't
@@ -1999,7 +2001,7 @@ function completeUnitOfWork(unitOfWork: Fiber): void {
     const returnFiber = completedWork.return;
 
     // Check if the work completed or if something threw.
-    // flags 用来保存fiber 状态 todo
+    // flags 用来保存fiber 状态 todo , Incomplete === 还没有完成
     if ((completedWork.flags & Incomplete) === NoFlags) {
       setCurrentDebugFiberInDEV(completedWork);
       let next;
@@ -2068,7 +2070,7 @@ function completeUnitOfWork(unitOfWork: Fiber): void {
         return;
       }
     }
-
+    // reconciler （reconcileChildrenArray）设置 sibling
     const siblingFiber = completedWork.sibling;
     if (siblingFiber !== null) {
       // If there is more work to do in this returnFiber, do that next.

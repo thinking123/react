@@ -638,7 +638,7 @@ function cutOffTailIfNeeded(
     }
   }
 }
-
+// 向上冒泡  filber.child 的 (childLanes , subtreeFlags , flags )属性 到 filber  ,连接 child.sibling.return  ===  completedWork
 function bubbleProperties(completedWork: Fiber) {
   const didBailout =
     completedWork.alternate !== null &&
@@ -687,7 +687,7 @@ function bubbleProperties(completedWork: Fiber) {
           newChildLanes,
           mergeLanes(child.lanes, child.childLanes),
         );
-
+         // child 的 属性会冒泡到 上层
         subtreeFlags |= child.subtreeFlags;
         subtreeFlags |= child.flags;
 
@@ -960,6 +960,7 @@ function completeWork(
       return null;
     }
     case HostText: {
+      // HostText props === text
       const newText = newProps;
       if (current && workInProgress.stateNode != null) {
         const oldText = current.memoizedProps;
@@ -981,12 +982,12 @@ function completeWork(
         // {namespace:www.xxx , ancestorInfo: {}}
         const currentHostContext = getHostContext();
         const wasHydrated = popHydrationState(workInProgress);
-        if (wasHydrated) {
+        if (wasHydrated) { // false
           if (prepareToHydrateHostTextInstance(workInProgress)) {
             markUpdate(workInProgress);
           }
         } else {
-          // stateNode 是 fiber 对于的 html : filber.stateNode = <div/>
+          // stateNode 是 fiber 对应的 html : filber.stateNode = <div/>
           workInProgress.stateNode = createTextInstance(
             newText,
             rootContainerInstance,

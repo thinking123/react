@@ -356,7 +356,7 @@ export function shouldSetTextContent(type: string, props: Props): boolean {
       props.dangerouslySetInnerHTML.__html != null)
   );
 }
-
+// 返回 tag 对应的 html
 export function createTextInstance(
   text: string,
   rootContainerInstance: Container,
@@ -365,10 +365,11 @@ export function createTextInstance(
 ): TextInstance {
   if (__DEV__) {
     const hostContextDev = ((hostContext: any): HostContextDev);
-    // 用 document 创建 fiber html
+    // 校验 tag 是否在正确的 tag 内 使用
     validateDOMNesting(null, text, hostContextDev.ancestorInfo);
   }
-  // internalInstanceHandle === current fiber
+  // internalInstanceHandle === current fiber用 document 创建 fiber html ，
+  // 用 html api createTextNode ： 创建 fiber 对应的 html node （div，p）
   const textNode: TextInstance = createTextNode(text, rootContainerInstance);
   // 对于的html 内保存 fiber ， div[`__reactFiber$xxxxxx`] = fiber
   precacheFiberNode(internalInstanceHandle, textNode);
