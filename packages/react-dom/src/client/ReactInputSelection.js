@@ -55,7 +55,7 @@ function isSameOriginFrame(iframe) {
     return false;
   }
 }
-
+// 递归获取 activeElement ， 从 iframe contentWindow -> window
 function getActiveElementDeep() {
   let win = window;
   let element = getActiveElement();
@@ -82,6 +82,7 @@ function getActiveElementDeep() {
  * from https://html.spec.whatwg.org/#do-not-apply, looking at `selectionStart`
  * and `selectionEnd` rows.
  */
+// html 是否能够选择 : input ...
 export function hasSelectionCapabilities(elem) {
   const nodeName = elem && elem.nodeName && elem.nodeName.toLowerCase();
   return (
@@ -102,7 +103,7 @@ export function getSelectionInformation() {
   return {
     focusedElem: focusedElem,
     selectionRange: hasSelectionCapabilities(focusedElem)
-      ? getSelection(focusedElem)
+      ? getSelection(focusedElem) //  {start, end}
       : null,
   };
 }

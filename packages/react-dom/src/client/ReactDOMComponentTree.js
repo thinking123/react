@@ -81,6 +81,7 @@ export function isContainerMarkedAsRoot(node: Container): boolean {
 // The same thing applies to Suspense boundaries.
 export function getClosestInstanceFromNode(targetNode: Node): null | Fiber {
   // 返回 target html element 对应的 fiber (type = HostComponent or HostText)
+  // 返回html 对应的fiber html[internalInstanceKey] = fiber
   let targetInst = (targetNode: any)[internalInstanceKey];
   if (targetInst) {
     // Don't return HostRoot or SuspenseComponent here.

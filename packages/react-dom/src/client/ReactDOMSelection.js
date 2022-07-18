@@ -13,8 +13,11 @@ import {TEXT_NODE} from '../shared/HTMLNodeType';
  * @return {?object}
  */
 export function getOffsets(outerNode) {
+  //ownerDocument:  html 对应的最顶层 document
   const {ownerDocument} = outerNode;
+  // defaultView : 返回document 属于的window
   const win = (ownerDocument && ownerDocument.defaultView) || window;
+  // 返回选择的内容 从window 返回
   const selection = win.getSelection && win.getSelection();
 
   if (!selection || selection.rangeCount === 0) {

@@ -1325,7 +1325,7 @@ function performSyncWorkOnRoot(root) {
     ensureRootIsScheduled(root, now());
     return null;
   }
-
+  // 返回 RootCompleted , 从 html tree -> fiber tree , 创建对应的html 然后连接 html
   let exitStatus = renderRootSync(root, lanes);
   if (root.tag !== LegacyRoot && exitStatus === RootErrored) {
     // If something threw an error, try rendering one more time. We'll render
@@ -1353,6 +1353,7 @@ function performSyncWorkOnRoot(root) {
 
   // We now have a consistent tree. Because this is a sync render, we
   // will commit it even if something suspended.
+  // 双缓冲：alternate 已经计算完成设置 finishedWork === alternate 缓冲列表
   const finishedWork: Fiber = (root.current.alternate: any);
   root.finishedWork = finishedWork;
   root.finishedLanes = lanes;
@@ -1567,6 +1568,7 @@ function prepareFreshStack(root: FiberRoot, lanes: Lanes): Fiber {
   // workInProgress === alternate 备用Fiber
   workInProgress = rootWorkInProgress;
   workInProgressRootRenderLanes = subtreeRenderLanes = workInProgressRootIncludedLanes = lanes;
+  //开始 计算 fiber 和 stateNode (html)
   workInProgressRootExitStatus = RootInProgress;
   workInProgressRootFatalError = null;
   workInProgressRootSkippedLanes = NoLanes;
@@ -1775,7 +1777,7 @@ export function renderHasNotSuspendedYet(): boolean {
 
 function renderRootSync(root: FiberRoot, lanes: Lanes) {
   const prevExecutionContext = executionContext; // init 0
-  // RenderContext === 0b010
+  // RenderContext === 0b010 === 2
   executionContext |= RenderContext;
   const prevDispatcher = pushDispatcher();
 
@@ -1815,6 +1817,24 @@ function renderRootSync(root: FiberRoot, lanes: Lanes) {
 
   do {
     try {
+      // 递归 ：深度优先 ，创建fiber , stateNode (html) 连接 fiber.stateNode -> children
+      // fiber1.sibing ->fiberSibing , fiber1.return -> parentFiber , parentFiber.child -> fiber1
+      /*
+          <div>
+            {"12"}
+            <div>
+              <span>{"12"}</span>
+              "text"
+            </div>
+            <Ch/>
+          </div>
+        ----
+        Ch = (
+          <div>
+            {props.text}
+          </div>
+        )
+      */
       workLoopSync();
       break;
     } catch (thrownValue) {
@@ -1845,6 +1865,7 @@ function renderRootSync(root: FiberRoot, lanes: Lanes) {
   }
 
   // Set this to null to indicate there's no in-progress render.
+  // 删除 workInProgressRoot =root -> null
   workInProgressRoot = null;
   workInProgressRootRenderLanes = NoLanes;
 
@@ -1993,6 +2014,7 @@ function completeUnitOfWork(unitOfWork: Fiber): void {
   // Attempt to complete the current unit of work, then move to the next
   // sibling. If there are no more siblings, return to the parent fiber.
   let completedWork = unitOfWork;
+  // 循环处理 unitOfWork ， unitOfWork.sibling , unitOfWork.return
   do {
     // The current, flushed, state of this fiber is the alternate. Ideally
     // nothing should rely on this, but relying on it here means that we don't
@@ -2021,7 +2043,7 @@ function completeUnitOfWork(unitOfWork: Fiber): void {
       if (next !== null) {
         // Completing this fiber spawned new work. Work on that next.
         workInProgress = next;
-        return;
+        return; // performUnitOfWork()
       }
     } else {
       // This fiber did not complete because something threw. Pop values off
@@ -2075,7 +2097,7 @@ function completeUnitOfWork(unitOfWork: Fiber): void {
     if (siblingFiber !== null) {
       // If there is more work to do in this returnFiber, do that next.
       workInProgress = siblingFiber;
-      return;
+      return;// performUnitOfWork()
     }
     // Otherwise, return to the parent
     completedWork = returnFiber;
@@ -2085,6 +2107,7 @@ function completeUnitOfWork(unitOfWork: Fiber): void {
 
   // We've reached the root.
   if (workInProgressRootExitStatus === RootInProgress) {
+    // 完成计算fiber
     workInProgressRootExitStatus = RootCompleted;
   }
 }
@@ -2209,11 +2232,12 @@ function commitRootImpl(
   // might get scheduled in the commit phase. (See #16714.)
   // TODO: Delete all other places that schedule the passive effect callback
   // They're redundant(多余的).
+  // NoFlags === 0
   if (
     (finishedWork.subtreeFlags & PassiveMask) !== NoFlags ||
     (finishedWork.flags & PassiveMask) !== NoFlags
   ) {
-    if (!rootDoesHavePassiveEffects) {
+    if (!rootDoesHavePassiveEffects) {// true
       rootDoesHavePassiveEffects = true;
       pendingPassiveEffectsRemainingLanes = remainingLanes;
       // workInProgressTransitions might be overwritten, so we want
@@ -2254,6 +2278,7 @@ function commitRootImpl(
     setCurrentUpdatePriority(DiscreteEventPriority);
 
     const prevExecutionContext = executionContext;
+    //  提交
     executionContext |= CommitContext;
 
     // Reset this to null before calling lifecycles

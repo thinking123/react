@@ -204,6 +204,7 @@ export function getPublicInstance(instance: Instance): * {
 
 export function prepareForCommit(containerInfo: Container): Object | null {
   eventsEnabled = ReactBrowserEventEmitterIsEnabled(); // true
+  //返回选择内容 : {focusedElem , selectionRange }
   selectionInformation = getSelectionInformation();
   let activeInstance = null;
   if (enableCreateEventHandleAPI) { // true

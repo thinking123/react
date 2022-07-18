@@ -673,6 +673,7 @@ export function markRootFinished(root: FiberRoot, remainingLanes: Lanes) {
   const expirationTimes = root.expirationTimes;
 
   // Clear the lanes that no longer have pending work
+  // 删除不是 pending的 lane 数据:entanglements,eventTimes,expirationTimes
   let lanes = noLongerPendingLanes;
   while (lanes > 0) {
     const index = pickArbitraryLaneIndex(lanes);

@@ -171,10 +171,10 @@ function markUpdate(workInProgress: Fiber) {
   // a PlacementAndUpdate.
   workInProgress.flags |= Update;
 }
-
+//设置 flags |= Ref | RefStatic
 function markRef(workInProgress: Fiber) {
   workInProgress.flags |= Ref;
-  if (enableSuspenseLayoutEffectSemantics) {
+  if (enableSuspenseLayoutEffectSemantics) { // true
     workInProgress.flags |= RefStatic;
   }
 }
@@ -221,6 +221,7 @@ if (supportsMutation) { // true
     // children to find all the terminal nodes.
     let node = workInProgress.child;
     while (node !== null) {
+      // div or {'text'}
       if (node.tag === HostComponent || node.tag === HostText) {
         appendInitialChild(parent, node.stateNode);
       } else if (node.tag === HostPortal) {
@@ -228,6 +229,7 @@ if (supportsMutation) { // true
         // down its children. Instead, we'll get insertions from each child in
         // the portal directly.
       } else if (node.child !== null) {
+        // function component : 挂在 function  的 children
         node.child.return = node;
         node = node.child;
         continue;
@@ -239,8 +241,10 @@ if (supportsMutation) { // true
         if (node.return === null || node.return === workInProgress) {
           return;
         }
+        // 添加了 function component children,返回 function fiber
         node = node.return;
       }
+      // 添加 sibling 到 parent
       node.sibling.return = node.return;
       node = node.sibling;
     }
@@ -688,6 +692,7 @@ function bubbleProperties(completedWork: Fiber) {
           mergeLanes(child.lanes, child.childLanes),
         );
          // child 的 属性会冒泡到 上层
+         // subtreeFlags 和 flags 合并到 parent.subtreeFlags
         subtreeFlags |= child.subtreeFlags;
         subtreeFlags |= child.flags;
 
@@ -758,7 +763,8 @@ function bubbleProperties(completedWork: Fiber) {
 
   return didBailout;
 }
-
+// 创建fiber 对应的html , fiber.stateNode === html
+// bubbleProperties
 function completeWork(
   current: Fiber | null,
   workInProgress: Fiber,
@@ -813,6 +819,7 @@ function completeWork(
         const cache: Cache = workInProgress.memoizedState.cache;
         if (cache !== previousCache) {
           // Run passive effects to retain/release the cache.
+          //todo debug
           workInProgress.flags |= Passive;
         }
         popCacheProvider(workInProgress, cache);
@@ -848,6 +855,7 @@ function completeWork(
               // updates too, because current.child would only be null if the
               // previous render was null (so the container would already
               // be empty).
+              //todo debug
               workInProgress.flags |= Snapshot;
 
               // If this was a forced client render, there may have been
@@ -929,7 +937,7 @@ function completeWork(
             currentHostContext,
             workInProgress,
           );
-
+          // append all children fiber 的 stateNode 到 instance（parent fiber）
           appendAllChildren(instance, workInProgress, false, false);
 
           // fiber.stateNode = tag (div)

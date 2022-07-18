@@ -3711,7 +3711,7 @@ function attemptEarlyBailoutIfNoScheduledUpdate(
   }
   return bailoutOnAlreadyFinishedWork(current, workInProgress, renderLanes);
 }
-
+// 返回下一个 child fiber
 function beginWork(
   current: Fiber | null, // 原始 fiber
   workInProgress: Fiber, // fiber.alternate
@@ -3861,6 +3861,7 @@ function beginWork(
     case HostComponent:
       return updateHostComponent(current, workInProgress, renderLanes);
     case HostText:
+      //  text ，返回null ，执行 complete unit
       return updateHostText(current, workInProgress);
     case SuspenseComponent:
       return updateSuspenseComponent(current, workInProgress, renderLanes);

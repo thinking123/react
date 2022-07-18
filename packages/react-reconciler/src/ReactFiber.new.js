@@ -613,6 +613,7 @@ export function createFiberFromElement(
 ): Fiber {
   let owner = null;
   if (__DEV__) {
+    // _owner === ReactElement(..., owner, props) , owner ===  ReactCurrentOwner.current = workInProgress;
     owner = element._owner;
   }
   const type = element.type;
