@@ -70,6 +70,7 @@ export function isHigherEventPriority(
 
 export function lanesToEventPriority(lanes: Lanes): EventPriority {
   const lane = getHighestPriorityLane(lanes);
+  // isHigherEventPriority == DiscreteEventPriority < lane
   if (!isHigherEventPriority(DiscreteEventPriority, lane)) {
     return DiscreteEventPriority;
   }

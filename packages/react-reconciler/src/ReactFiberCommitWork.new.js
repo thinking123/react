@@ -515,6 +515,18 @@ function commitHookEffectListUnmount(
   finishedWork: Fiber,
   nearestMountedAncestor: Fiber | null,
 ) {
+  // useEffect : pushEffect()
+  /*
+  const effect: Effect = {
+    tag, // HasEffect
+    create,
+    destroy,
+    deps,
+    // Circular
+    next: (null: any), -> effect
+  };
+
+  */
   const updateQueue: FunctionComponentUpdateQueue | null = (finishedWork.updateQueue: any);
   const lastEffect = updateQueue !== null ? updateQueue.lastEffect : null;
   if (lastEffect !== null) {
@@ -576,13 +588,14 @@ function commitHookEffectListMount(flags: HookFlags, finishedWork: Fiber) {
           }
         }
 
-        // Mount
+        // Mount ,  effect.create === useEffect(fun === create)
         const create = effect.create;
         if (__DEV__) {
           if ((flags & HookInsertion) !== NoHookEffect) {
             setIsRunningInsertionEffect(true);
           }
         }
+        //  effect.destroy  === useEffect(() =>{return destroy})
         effect.destroy = create();
         if (__DEV__) {
           if ((flags & HookInsertion) !== NoHookEffect) {
@@ -1540,9 +1553,10 @@ function commitPlacement(finishedWork: Fiber): void {
 function insertOrAppendPlacementNodeIntoContainer(
   node: Fiber,
   before: ?Instance,
-  parent: Container,
+  parent: Container, // parent === container(id===root)
 ): void {
   const {tag} = node;
+  // HostComponent === div,... html
   const isHost = tag === HostComponent || tag === HostText;
   if (isHost) {
     const stateNode = node.stateNode;
@@ -2439,6 +2453,7 @@ function commitReconciliationEffects(finishedWork: Fiber) {
     // inserted, before any life-cycles like componentDidMount gets called.
     // TODO: findDOMNode doesn't rely on this any more but isMounted does
     // and isMounted is deprecated anyway so we should be able to kill this.
+    // flags 删除 Placement
     finishedWork.flags &= ~Placement;
   }
   if (flags & Hydrating) {
@@ -2734,6 +2749,7 @@ function commitPassiveMountEffects_begin(
   while (nextEffect !== null) {
     const fiber = nextEffect;
     const firstChild = fiber.child;
+    // PassiveMask === Passive | ChildDeletion
     if ((fiber.subtreeFlags & PassiveMask) !== NoFlags && firstChild !== null) {
       firstChild.return = fiber;
       nextEffect = firstChild;
@@ -3031,6 +3047,9 @@ function commitPassiveUnmountEffects_begin() {
       }
     }
 
+    // 获取设置了 flags =  Passive | ChildDeletion , subtreeFlags != child.subtreeFlags | child.flags
+    // useEffect() -> fiber.flags != Passive
+    // 获取最底层的 fiber
     if ((fiber.subtreeFlags & PassiveMask) !== NoFlags && child !== null) {
       child.return = fiber;
       nextEffect = child;
@@ -3079,6 +3098,8 @@ function commitPassiveUnmountOnFiber(finishedWork: Fiber): void {
         recordPassiveEffectDuration(finishedWork);
       } else {
         commitHookEffectListUnmount(
+          // HookPassive === Passive
+          // HookHasEffect === HasEffect
           HookPassive | HookHasEffect,
           finishedWork,
           finishedWork.return,

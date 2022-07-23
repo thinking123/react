@@ -544,7 +544,7 @@ export function scheduleUpdateOnFiber(
       console.error('useInsertionEffect must not schedule updates.');
     }
   }
-  // 更新 lane 返回 FiberRoot
+  // 更新 fiber.lane |= lane , 返回 FiberRoot
   const root = markUpdateLaneFromFiberToRoot(fiber, lane);
   if (root === null) {
     return null;
@@ -2302,7 +2302,7 @@ function commitRootImpl(
       recordCommitTime();
     }
 
-    if (enableProfilerTimer && enableProfilerNestedUpdateScheduledHook) {
+    if (enableProfilerTimer && enableProfilerNestedUpdateScheduledHook) { // true
       // Track the root here, rather than in commitLayoutEffects(), because of ref setters.
       // Updates scheduled during ref detachment should also be flagged.
       rootCommittingMutationOrLayoutEffects = root;
@@ -2325,14 +2325,14 @@ function commitRootImpl(
     root.current = finishedWork;
 
     // The next phase is the layout phase, where we call effects that read
-    // the host tree after it's been mutated. The idiomatic use case for this is
+    // the host tree after it's been mutated. The idiomatic(惯用语) use case for this is
     // layout, but class component lifecycles also fire here for legacy reasons.
     if (__DEV__) {
-      if (enableDebugTracing) {
+      if (enableDebugTracing) { // log
         logLayoutEffectsStarted(lanes);
       }
     }
-    if (enableSchedulingProfiler) {
+    if (enableSchedulingProfiler) { // log
       markLayoutEffectsStarted(lanes);
     }
     commitLayoutEffects(finishedWork, root, lanes);
@@ -2352,6 +2352,7 @@ function commitRootImpl(
 
     // Tell Scheduler to yield at the end of the frame, so the browser has an
     // opportunity to paint.
+    //   needsPaint = true;
     requestPaint();
 
     executionContext = prevExecutionContext;
@@ -2377,6 +2378,7 @@ function commitRootImpl(
     // schedule a callback until after flushing layout work.
     rootDoesHavePassiveEffects = false;
     rootWithPendingPassiveEffects = root;
+    //todo debug
     pendingPassiveEffectsLanes = lanes;
   } else {
     // There were no passive effects, so we can immediately release the cache
@@ -2519,6 +2521,7 @@ export function flushPassiveEffects(): boolean {
   // `Scheduler.runWithPriority`, which accepts a function. But now we track the
   // priority within React itself, so we can mutate the variable directly.
   // init rootWithPendingPassiveEffects === null
+  // useState , rootWithPendingPassiveEffects === root
   if (rootWithPendingPassiveEffects !== null) {
     // Cache the root since rootWithPendingPassiveEffects is cleared in
     // flushPassiveEffectsImpl
@@ -2530,6 +2533,7 @@ export function flushPassiveEffects(): boolean {
     pendingPassiveEffectsRemainingLanes = NoLanes;
 
     const renderPriority = lanesToEventPriority(pendingPassiveEffectsLanes);
+    //DefaultEventPriority === 16 , return DefaultEventPriority
     const priority = lowerEventPriority(DefaultEventPriority, renderPriority);
     const prevTransition = ReactCurrentBatchConfig.transition;
     const previousPriority = getCurrentUpdatePriority();
@@ -2600,8 +2604,9 @@ function flushPassiveEffectsImpl() {
 
   const prevExecutionContext = executionContext;
   executionContext |= CommitContext;
-
+  // root.current === FiberHost
   commitPassiveUnmountEffects(root.current);
+  // 运行 useEffect(create fun)
   commitPassiveMountEffects(root, root.current, lanes, transitions);
 
   // TODO: Move to commitPassiveMountEffects

@@ -183,7 +183,7 @@ function getHighestPriorityLanes(lanes: Lanes | Lane): Lanes {
       return lanes;
   }
 }
-
+// wipLanes(擦拭车道)
 export function getNextLanes(root: FiberRoot, wipLanes: Lanes): Lanes {
   // Early bailout if there's no pending work left.
   const pendingLanes = root.pendingLanes;

@@ -1276,6 +1276,7 @@ function pushHostRootContext(workInProgress) {
     );
   } else if (root.context) {
     // Should always be set
+    // root.context === {}
     pushTopLevelContextObject(workInProgress, root.context, false);
   }
   pushHostContainer(workInProgress, root.containerInfo);

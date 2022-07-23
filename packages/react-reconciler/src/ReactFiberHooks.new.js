@@ -410,6 +410,7 @@ export function renderWithHooks<Props, SecondArg>(
   // so memoizedState would be null during updates and mounts.
   if (__DEV__) {
     if (current !== null && current.memoizedState !== null) {
+      // update 使用的hooks
       ReactCurrentDispatcher.current = HooksDispatcherOnUpdateInDEV;
     } else if (hookTypesDev !== null) {
       // This dispatcher handles an edge case where a component is updating,
@@ -427,6 +428,7 @@ export function renderWithHooks<Props, SecondArg>(
             return dispatcher.useState(initialState);
           }
       */
+     // mount 的时候使用的hooks
       ReactCurrentDispatcher.current = HooksDispatcherOnMountInDEV;
     }
   } else {
@@ -539,6 +541,7 @@ export function renderWithHooks<Props, SecondArg>(
 
   if (enableLazyContextPropagation) {
     if (current !== null) {
+      // didReceiveUpdate
       if (!checkIfWorkInProgressReceivedUpdate()) {
         // If there were no changes to props or state, we need to check if there
         // was a context change. We didn't already do this because there's no
@@ -645,12 +648,27 @@ function mountWorkInProgressHook(): Hook {
     baseState: null,
     baseQueue: null,
     queue: null,
-
+    /*queue = {
+      pending: null,: pending === update =  {
+                                      lane,
+                                      action,
+                                      hasEagerState: false,
+                                      eagerState: null,
+                                      next: (null: any), -> update
+                                    };
+      interleaved: null,
+      lanes: NoLanes,
+      dispatch: null,
+      lastRenderedReducer: basicStateReducer,
+      lastRenderedState: snapshot,
+    };
+    */
     next: null, // next -> hook , hook.next -> hook , ...
   };
   // init workInProgressHook === null
   if (workInProgressHook === null) {
     // This is the first hook in the list
+    // fiber.memoizedState 保存 hook
     currentlyRenderingFiber.memoizedState = workInProgressHook = hook;
   } else {
     // Append to the end of the list
@@ -715,6 +733,7 @@ function updateWorkInProgressHook(): Hook {
       currentlyRenderingFiber.memoizedState = workInProgressHook = newHook;
     } else {
       // Append to the end of the list.
+      //workInProgressHook1.next -> workInProgressHook = newHook
       workInProgressHook = workInProgressHook.next = newHook;
     }
   }
@@ -885,6 +904,7 @@ function updateReducer<S, I, A>(
     // Mark that the fiber performed work, but only if the new state is
     // different from the current state.
     if (!is(newState, hook.memoizedState)) {
+      // didReceiveUpdate
       markWorkInProgressReceivedUpdate();
     }
 
@@ -1533,10 +1553,10 @@ function mountState<S>(
   }
   hook.memoizedState = hook.baseState = initialState;
   const queue: UpdateQueue<S, BasicStateAction<S>> = {
-    pending: null,
+    pending: null, // === update
     interleaved: null,
     lanes: NoLanes,
-    dispatch: null,
+    dispatch: null, // === setState , setState(action)
     lastRenderedReducer: basicStateReducer,
     lastRenderedState: (initialState: any),
   };
@@ -1562,7 +1582,7 @@ function rerenderState<S>(
 ): [S, Dispatch<BasicStateAction<S>>] {
   return rerenderReducer(basicStateReducer, (initialState: any));
 }
-
+// useEffect(create , deps)
 function pushEffect(tag, create, destroy, deps) {
   const effect: Effect = {
     tag, // HasEffect
@@ -1724,7 +1744,7 @@ function updateEffectImpl(fiberFlags, hookFlags, create, deps): void {
   }
 
   currentlyRenderingFiber.flags |= fiberFlags;
-
+  //HasEffect  === HookHasEffect
   hook.memoizedState = pushEffect(
     HookHasEffect | hookFlags,
     create,
@@ -1732,7 +1752,7 @@ function updateEffectImpl(fiberFlags, hookFlags, create, deps): void {
     nextDeps,
   );
 }
-
+// useEffect
 function mountEffect(
   create: () => (() => void) | void,
   deps: Array<mixed> | void | null,
@@ -1751,8 +1771,11 @@ function mountEffect(
   } else {
     return mountEffectImpl(
       //2408  //8388608
+      // Passive(ReactFiberFlags) === PassiveEffect
+      // PassiveStatic === PassiveStaticEffect
       PassiveEffect | PassiveStaticEffect,
       // 8
+      // Passive (ReactHookEffectTags) === HookPassive
       HookPassive,
       create,
       deps,
@@ -2266,9 +2289,9 @@ function dispatchReducerAction<S, A>(
 }
 
 function dispatchSetState<S, A>(
-  fiber: Fiber,
+  fiber: Fiber, // 调用 useState 的 fiber , type === function App(){}
   queue: UpdateQueue<S, A>,
-  action: A, // action === setState(fun)
+  action: A, // action === fun , const [state,setState] = useState(),setState(action)
 ) {
   if (__DEV__) {
     if (typeof arguments[3] === 'function') {
@@ -2279,7 +2302,7 @@ function dispatchSetState<S, A>(
       );
     }
   }
-
+  // 返回SyncLane === 1
   const lane = requestUpdateLane(fiber);
 
   const update: Update<S, A> = {
@@ -2293,6 +2316,7 @@ function dispatchSetState<S, A>(
   if (isRenderPhaseUpdate(fiber)) {
     enqueueRenderPhaseUpdate(queue, update);
   } else {
+    // queue.pending === update ,update.next -> update
     enqueueUpdate(fiber, queue, update, lane);
 
     const alternate = fiber.alternate;
@@ -2312,7 +2336,10 @@ function dispatchSetState<S, A>(
           ReactCurrentDispatcher.current = InvalidNestedHooksDispatcherOnUpdateInDEV;
         }
         try {
+          // lastRenderedState === init 值
           const currentState: S = (queue.lastRenderedState: any);
+          // 计算 state(pre => pre + 1 ) , eagerState ===  pre + 1
+          // 计算 setState 之后的值
           const eagerState = lastRenderedReducer(currentState, action);
           // Stash the eagerly computed state, and the reducer used to compute
           // it, on the update object. If the reducer hasn't changed by the
@@ -2379,7 +2406,7 @@ function enqueueUpdate<S, A>(
   update: Update<S, A>,
   lane: Lane,
 ) {
-  if (isInterleavedUpdate(fiber, lane)) {
+  if (isInterleavedUpdate(fiber, lane)) { // false
     const interleaved = queue.interleaved;
     if (interleaved === null) {
       // This is the first update. Create a circular list.

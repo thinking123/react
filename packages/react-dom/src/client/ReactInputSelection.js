@@ -35,7 +35,9 @@ function containsNode(outerNode, innerNode) {
 function isInDocument(node) {
   return (
     node &&
+    // node.ownerDocument : document
     node.ownerDocument &&
+    //node.ownerDocument.documentElement : html
     containsNode(node.ownerDocument.documentElement, node)
   );
 }

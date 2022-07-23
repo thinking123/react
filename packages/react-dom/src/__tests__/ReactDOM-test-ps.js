@@ -38,10 +38,7 @@ describe('ReactDOM', () => {
     function Ch(props) {
       return (
         <div>
-          <div>
-            {props.name}
             {props.uuid}
-          </div>
         </div>
       );
     }
@@ -56,17 +53,14 @@ describe('ReactDOM', () => {
         console.log('log memoSb', sb);
         return sb * 10;
       }, [sb]);
-      console.log('p', sb);
       return (
         <div
           ref={buttonRef}
           onClick={event => {
             event.preventDefault();
-            console.log('p', sb);
             setSb(pre => pre + 1);
           }}>
-          {sb}
-          <Ch name={sb} uuid={memoSb} />
+          <Ch  uuid={memoSb} />
         </div>
       );
     }

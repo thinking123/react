@@ -512,6 +512,7 @@ export function appendChildToContainer(
   // This is why we ensure that non React root containers have inline onclick
   // defined.
   // https://github.com/facebook/react/issues/11918
+  // _reactRootContainer === root == FiberRoot
   const reactRootContainer = container._reactRootContainer;
   if (
     (reactRootContainer === null || reactRootContainer === undefined) &&
