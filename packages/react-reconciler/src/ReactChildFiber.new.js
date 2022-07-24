@@ -1146,6 +1146,7 @@ function ChildReconciler(shouldTrackSideEffects) {
     while (child !== null) {
       // TODO: If key === null and child.key === null, then this only applies to
       // the first item in the list.
+      // key 是否修改 ， null === null ， 默认key === null
       if (child.key === key) {
         const elementType = element.type;
         if (elementType === REACT_FRAGMENT_TYPE) {
@@ -1266,6 +1267,7 @@ function ChildReconciler(shouldTrackSideEffects) {
     // Handle top level unkeyed fragments as if they were arrays.
     // This leads to an ambiguity between <>{[...]}</> and <>...</>.
     // We treat the ambiguous cases above the same.
+    //是否是<Framgent/>
     const isUnkeyedTopLevelFragment =
       typeof newChild === 'object' &&
       newChild !== null &&
@@ -1357,8 +1359,10 @@ function ChildReconciler(shouldTrackSideEffects) {
   return reconcileChildFibers;
 }
 // shouldTrackSideEffects === true
+//二次执行的时候
 export const reconcileChildFibers = ChildReconciler(true);
 // mount shouldTrackSideEffects === false
+// 第一次执行的时候，mount
 export const mountChildFibers = ChildReconciler(false);
 
 export function cloneChildFibers(

@@ -1355,6 +1355,7 @@ function performSyncWorkOnRoot(root) {
   // will commit it even if something suspended.
   // 双缓冲：alternate 已经计算完成设置 finishedWork === alternate 缓冲列表
   const finishedWork: Fiber = (root.current.alternate: any);
+  //todo debug
   root.finishedWork = finishedWork;
   root.finishedLanes = lanes;
   commitRoot(
@@ -2238,6 +2239,7 @@ function commitRootImpl(
     (finishedWork.flags & PassiveMask) !== NoFlags
   ) {
     if (!rootDoesHavePassiveEffects) {// true
+      //todo debug
       rootDoesHavePassiveEffects = true;
       pendingPassiveEffectsRemainingLanes = remainingLanes;
       // workInProgressTransitions might be overwritten, so we want
@@ -2309,6 +2311,8 @@ function commitRootImpl(
     }
 
     // The next phase is the mutation phase, where we mutate the host tree.
+    // 更新 html , 用fiber 创建 或者 update 对应的 html
+    //深度优先遍历 fiber
     commitMutationEffects(root, finishedWork, lanes);
 
     if (enableCreateEventHandleAPI) {
@@ -2322,6 +2326,9 @@ function commitRootImpl(
     // the mutation phase, so that the previous tree is still current during
     // componentWillUnmount, but before the layout phase, so that the finished
     // work is current during componentDidMount/Update.
+    // 修改双缓冲，workFiber -> current
+    // work 的 fiber 修改 ，current -> workFiber
+    // workFiber -> current
     root.current = finishedWork;
 
     // The next phase is the layout phase, where we call effects that read
@@ -2335,6 +2342,7 @@ function commitRootImpl(
     if (enableSchedulingProfiler) { // log
       markLayoutEffectsStarted(lanes);
     }
+    // layout 修改 , ref 设置
     commitLayoutEffects(finishedWork, root, lanes);
     if (__DEV__) {
       if (enableDebugTracing) {
