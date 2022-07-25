@@ -104,6 +104,10 @@ describe('ReactDOM', () => {
       React.useEffect(() => {
         console.log('log useEffect', sb);
         // console.log('log useEffect', sb1);
+
+        return () => {
+          console.log('log useEffect', sb);
+        };
       }, [sb]);
 
       React.useCallback(() => {
