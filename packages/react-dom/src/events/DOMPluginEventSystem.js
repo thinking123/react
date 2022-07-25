@@ -107,6 +107,7 @@ function extractEvents(
   // should probably be inlined somewhere and have its logic
   // be core the to event system. This would potentially allow
   // us to ship builds of React without the polyfilled plugins below.
+  // 设置 ： SyntheticEventCtor === (SyntheticMouseEvent , ... )
   SimpleEventPlugin.extractEvents(
     dispatchQueue,
     domEventName,
@@ -481,12 +482,14 @@ function addTrappedEventListener(
   if (enableLegacyFBSupport && isDeferredListenerForLegacyFBSupport) {
     const originalListener = listener;
     listener = function(...p) {
+      // 删除listenrer
       removeEventListener(
         targetContainer,
         domEventName,
         unsubscribeListener,
         isCapturePhaseListener,
       );
+      // 调用 listerner
       return originalListener.apply(this, p);
     };
   }

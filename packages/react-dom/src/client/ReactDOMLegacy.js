@@ -109,6 +109,8 @@ function noopOnRecoverableError() {
   // legacy API.
 }
 // 上一级  legacyRenderSubtreeIntoContainer -> 上一级 ReactDOM.render()
+// 创建 FiberHost and Fiber(type=Host) ,hook html events
+// flushTask
 function legacyCreateRootFromDOMContainer(
   container: Container, // root div html
   initialChildren: ReactNodeList, // {props , type , key , ref , ....}
@@ -218,7 +220,7 @@ function warnOnInvalidCallback(callback: mixed, callerName: string): void {
 function legacyRenderSubtreeIntoContainer(
   parentComponent: ?React$Component<any, any>, // null
   children: ReactNodeList, // <App/>
-  container: Container, // root
+  container: Container, // html root
   forceHydrate: boolean, // false , ssr === false
   callback: ?Function,
 ) {

@@ -1802,7 +1802,7 @@ function renderRootSync(root: FiberRoot, lanes: Lanes) {
     }
     // init null
     workInProgressTransitions = getTransitionsForLanes(root, lanes);
-    // 设置 fiber 的 备用 alertnate === workInProgress
+    // 设置 fiber 的 备用 alertnate === workInProgress , Fiber(tag === Host)
     prepareFreshStack(root, lanes);
   }
 
@@ -2235,7 +2235,7 @@ function commitRootImpl(
   // They're redundant(多余的).
   // NoFlags === 0
   if (
-    (finishedWork.subtreeFlags & PassiveMask) !== NoFlags ||
+    (finishedWork.subtreeFlags & PassiveMask) !== NoFlags || // true
     (finishedWork.flags & PassiveMask) !== NoFlags
   ) {
     if (!rootDoesHavePassiveEffects) {// true

@@ -121,7 +121,7 @@ function hasContextChanged(): boolean {
   if (disableLegacyContext) {
     return false;
   } else {
-    return didPerformWorkStackCursor.current;
+    return didPerformWorkStackCursor.current; // false
   }
 }
 

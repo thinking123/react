@@ -202,7 +202,7 @@ export function createUpdate(eventTime: number, lane: Lane): Update<*> {
     lane,
 
     tag: UpdateState, // 0
-    payload: null,
+    payload: null, // === {element} , element === {$typeof:...}
     callback: null,
 
     next: null,
@@ -238,7 +238,7 @@ export function enqueueUpdate<State>(
     payload: null, // payload -> {element : {$$typeof , ...}}
     callback: null,
 
-    next: null,
+    next: null, -> update
   };
   */
   const updateQueue = fiber.updateQueue;

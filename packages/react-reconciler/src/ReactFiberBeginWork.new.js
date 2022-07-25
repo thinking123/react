@@ -3496,7 +3496,7 @@ function checkScheduledUpdateOrContext(
   }
   // No pending update, but because context is propagated lazily, we need
   // to check for a context change before we bail out.
-  if (enableLazyContextPropagation) {
+  if (enableLazyContextPropagation) { // true
     const dependencies = current.dependencies;
     if (dependencies !== null && checkIfContextChanged(dependencies)) {
       return true;

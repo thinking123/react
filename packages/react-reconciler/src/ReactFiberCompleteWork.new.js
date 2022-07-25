@@ -845,10 +845,10 @@ function completeWork(
             const prevState: RootState = current.memoizedState;
             if (
               // Check if this is a client root
-              !prevState.isDehydrated ||
+              !prevState.isDehydrated || // prevState.isDehydrated === false
               // Check if we reverted to client rendering (e.g. due to an error)
               (workInProgress.flags & ForceClientRender) !== NoFlags
-            ) {
+            ) { // true
               // Schedule an effect to clear this container at the start of the
               // next commit. This handles the case of React rendering into a
               // container with previous children. It's also safe to do for
@@ -866,7 +866,7 @@ function completeWork(
           }
         }
       }
-      updateHostContainer(current, workInProgress);
+      updateHostContainer(current, workInProgress); // noop
       bubbleProperties(workInProgress);
       if (enableTransitionTracing) {
         if ((workInProgress.subtreeFlags & Visibility) !== NoFlags) {

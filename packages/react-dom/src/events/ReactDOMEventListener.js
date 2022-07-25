@@ -271,6 +271,7 @@ function dispatchEventWithEnableCapturePhaseSelectiveHydrationWithoutDiscreteEve
   targetContainer: EventTarget,
   nativeEvent: AnyNativeEvent,
 ) {
+  // 返回 event 对应的tagget Fiber
   let blockedOn = findInstanceBlockingEvent(
     domEventName,
     eventSystemFlags,
@@ -366,6 +367,7 @@ export function findInstanceBlockingEvent(
   return_targetInst = null;
   // 获取 event 的 target
   const nativeEventTarget = getEventTarget(nativeEvent);
+  // 返回event html 的 fiber （html ）
   let targetInst = getClosestInstanceFromNode(nativeEventTarget);
 
   if (targetInst !== null) {

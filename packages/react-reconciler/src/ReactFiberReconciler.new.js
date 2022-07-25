@@ -335,7 +335,7 @@ export function updateContainer(
   callback: ?Function,
 ): Lane {
   if (__DEV__) {
-    onScheduleRoot(container, element);
+    onScheduleRoot(container, element); // log
   } // FiberNode (type = HostRoot)
   const current = container.current;
   // 返回 performance.now 时间戳
@@ -344,7 +344,7 @@ export function updateContainer(
   const lane = requestUpdateLane(current); // SyncLane (1)
 
   if (enableSchedulingProfiler) { // true , disabled 属性
-    markRenderScheduled(lane);
+    markRenderScheduled(lane); // log
   }
   // parentComponent === undefined ，返回 {}
   const context = getContextForSubtree(parentComponent);// init null , context={}

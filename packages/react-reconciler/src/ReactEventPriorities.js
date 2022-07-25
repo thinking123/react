@@ -53,7 +53,7 @@ export function runWithPriority<T>(priority: EventPriority, fn: () => T): T {
 }
 
 export function getCurrentUpdatePriority(): EventPriority {
-  return enableNewReconciler
+  return enableNewReconciler // true
     ? (getCurrentUpdatePriority_new(): any)
     : (getCurrentUpdatePriority_old(): any);
 }

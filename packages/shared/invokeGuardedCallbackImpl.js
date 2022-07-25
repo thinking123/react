@@ -58,7 +58,7 @@ if (__DEV__) {
   ) {
     const fakeNode = document.createElement('react');
 
-    invokeGuardedCallbackImpl = function invokeGuardedCallbackDev<
+    invokeGuardedCallbackImpl = function invokeGuardedCallbackDev< // 执行 click listerner
       A,
       B,
       C,

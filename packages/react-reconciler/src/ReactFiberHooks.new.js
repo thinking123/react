@@ -693,6 +693,7 @@ function updateWorkInProgressHook(): Hook {
       nextCurrentHook = null;
     }
   } else {
+    // fiber.memoizedState = hook1, hook1.next->hook2
     nextCurrentHook = currentHook.next;
   }
 

@@ -425,6 +425,7 @@ export function jsxWithValidationDynamic(type, props, key) {
   };
 
 */
+// createElementWithValidation : 创建 element == { $$typeof , ...}
 export function createElementWithValidation(type, props, children) {
   // 校验 type 是否是function 或者 Fragment 等
   const validType = isValidElementType(type);
