@@ -78,7 +78,7 @@ describe('ReactDOM', () => {
           }}
           ref={buttonRef2}>
           {sb.map((_sb, i) => {
-            <span key={i}>{_sb}</span>;
+            return <span key={i}>{_sb}</span>;
           })}
           {c.tv}
           <Ch33 ref={ch3Ref} id={sb} />

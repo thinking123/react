@@ -1643,7 +1643,7 @@ function mountIndeterminateComponent(
     );
     context = getMaskedContext(workInProgress, unmaskedContext);
   }
-
+  //
   prepareToReadContext(workInProgress, renderLanes);
   let value;
   let hasId;
@@ -3218,6 +3218,26 @@ function updateContextProvider(
   workInProgress: Fiber,
   renderLanes: Lanes,
 ) {
+  /*
+    {
+      $$typeof:Symbol(react.provider),
+      _context:{
+          _currentRenderer:
+          _currentRenderer2:
+          _currentValue:    {tv: 1}
+          _currentValue2:    {tv: 1}
+          _defaultValue:
+          _globalName:
+          _threadCount:
+          $$typeof:
+          Symbol(react.context)
+          Consumer:
+          {$$typeof: Symbol(react.context), _context: {…}, Provider: <accessor>, _currentValue: <accessor>, _currentValue2: <accessor>, …}
+          Provider:
+          {$$typeof: Symbol(react.provider), _context: {…}}
+      }
+    }
+  */
   const providerType: ReactProviderType<any> = workInProgress.type;
   const context: ReactContext<any> = providerType._context;
 

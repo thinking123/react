@@ -653,7 +653,7 @@ export function readContext<T>(context: ReactContext<T>): T {
   if (__DEV__) {
     // This warning would fire if you read context inside a Hook like useMemo.
     // Unlike the class check below, it's not enforced in production for perf.
-    if (isDisallowedContextReadInDEV) {
+    if (isDisallowedContextReadInDEV) { // false
       console.error(
         'Context can only be read while React is rendering. ' +
           'In classes, you can read it in the render method or getDerivedStateFromProps. ' +
@@ -663,10 +663,10 @@ export function readContext<T>(context: ReactContext<T>): T {
     }
   }
 
-  const value = isPrimaryRenderer
+  const value = isPrimaryRenderer // true
     ? context._currentValue
     : context._currentValue2;
-
+  // lastFullyObservedContext === null
   if (lastFullyObservedContext === context) {
     // Nothing to do. We already observe everything in this context.
   } else {
@@ -692,7 +692,7 @@ export function readContext<T>(context: ReactContext<T>): T {
         lanes: NoLanes,
         firstContext: contextItem,
       };
-      if (enableLazyContextPropagation) {
+      if (enableLazyContextPropagation) { // true
         currentlyRenderingFiber.flags |= NeedsPropagation;
       }
     } else {

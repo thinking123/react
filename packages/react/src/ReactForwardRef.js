@@ -44,7 +44,7 @@ export function forwardRef<Props, ElementType: React$ElementType>(
   }
 
   const elementType = {
-    $$typeof: REACT_FORWARD_REF_TYPE,
+    $$typeof: REACT_FORWARD_REF_TYPE, // Symbol.for('react.forward_ref')
     render,
   };
   if (__DEV__) {

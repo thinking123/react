@@ -535,7 +535,7 @@ shared:{
     // Append pending updates to base queue
     // lastBaseUpdate 和 firstBaseUpdate -> shared.pending
     if (lastBaseUpdate === null) {
-      firstBaseUpdate = firstPendingUpdate;
+      firstBaseUpdate = firstPendingUpdate; // copy : pending -> updateQueue:{firstBaseUpdate,lastBaseUpdate}
     } else {
       lastBaseUpdate.next = firstPendingUpdate;
     }
@@ -554,7 +554,7 @@ shared:{
       // 设置 原始 fiber
       if (currentLastBaseUpdate !== lastBaseUpdate) {
         if (currentLastBaseUpdate === null) {
-          currentQueue.firstBaseUpdate = firstPendingUpdate;
+          currentQueue.firstBaseUpdate = firstPendingUpdate; // current.updateQueue -> {firstBaseUpdate:pending ,lastBaseUpdate:pending } // pending === queue.shared.pending
         } else {
           currentLastBaseUpdate.next = firstPendingUpdate;
         }
@@ -564,7 +564,7 @@ shared:{
   }
 
   // These values may change as we process the queue.
-  if (firstBaseUpdate !== null) {
+  if (firstBaseUpdate !== null) { // firstBaseUpdate === pending === queue.shared.pending === {palyload:{element:App}}
     // Iterate through the list of updates to compute the result.
     let newState = queue.baseState;
     // TODO: Don't need to accumulate this. Instead, we can remove renderLanes
@@ -575,7 +575,7 @@ shared:{
     let newFirstBaseUpdate = null;
     let newLastBaseUpdate = null;
 
-    let update = firstBaseUpdate;
+    let update = firstBaseUpdate; // firstBaseUpdate
     do {
       const updateLane = update.lane;
       const updateEventTime = update.eventTime;

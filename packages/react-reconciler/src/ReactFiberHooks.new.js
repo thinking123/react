@@ -643,11 +643,10 @@ export function resetHooksAfterThrow(): void {
  // link连接 hook： hook1->hook2-> ...
 function mountWorkInProgressHook(): Hook {
   const hook: Hook = {
-    memoizedState: null,
-
-    baseState: null,
+    memoizedState: null, // useState (保存init 数据，initialState)
+    baseState: null,// useState (保存init 数据，initialState)
     baseQueue: null,
-    queue: null,
+    queue: null, // 保存更新queue
     /*queue = {
       pending: null,: pending === update =  {
                                       lane,
@@ -666,6 +665,9 @@ function mountWorkInProgressHook(): Hook {
     next: null, // next -> hook , hook.next -> hook , ...
   };
   // init workInProgressHook === null
+  // workInProgressHook === 当前执行的hook 数据
+  //fiber.memoizedState 保存了第一个 hook 数据
+  // hook的next保存下一个hook 数据，是一个单向的链表
   if (workInProgressHook === null) {
     // This is the first hook in the list
     // fiber.memoizedState 保存 hook
@@ -1558,8 +1560,9 @@ function mountState<S>(
     interleaved: null,
     lanes: NoLanes,
     dispatch: null, // === setState , setState(action)
-    lastRenderedReducer: basicStateReducer,
-    lastRenderedState: (initialState: any),
+    lastRenderedReducer: basicStateReducer,// lastRenderedReducer 保存计算的action , setState(pre=>pre+1)
+    // pre=>pre+1 === newState = basicStateReducer(pre+1)
+    lastRenderedState: (initialState: any), // lastRenderedState 保存上一次的 initialState
   };
   hook.queue = queue;
   const dispatch: Dispatch<
@@ -1611,9 +1614,13 @@ function pushEffect(tag, create, destroy, deps) {
     if (lastEffect === null) {
       componentUpdateQueue.lastEffect = effect.next = effect;
     } else {
+      // lastEffect 循环指针，firstEffect -> lastEffect.next === first
       const firstEffect = lastEffect.next;
+      //插入 effect 到循环指针
       lastEffect.next = effect;
       effect.next = firstEffect;
+      // lastEffect 指向 循环指针的最后一个指针
+      //  lastEffect.next指向 循环指针的第一个指针
       componentUpdateQueue.lastEffect = effect;
     }
   }
@@ -1639,7 +1646,7 @@ function getCallerStackFrame(): string {
 
 function mountRef<T>(initialValue: T): {|current: T|} {
   const hook = mountWorkInProgressHook();
-  if (enableUseRefAccessWarning) {
+  if (enableUseRefAccessWarning) { // true
     if (__DEV__) {
       // Support lazy initialization pattern shown in docs.
       // We need to store the caller stack frame so that we don't warn on subsequent renders.
@@ -1717,7 +1724,9 @@ function updateRef<T>(initialValue: T): {|current: T|} {
 function mountEffectImpl(fiberFlags, hookFlags, create, deps): void {
   const hook = mountWorkInProgressHook();
   const nextDeps = deps === undefined ? null : deps;
+  //设置fiber.flags = Passive | PassiveStatic
   currentlyRenderingFiber.flags |= fiberFlags;
+  // useEffect memoizedState === effect
   hook.memoizedState = pushEffect(
     // HasEffect === 1
     HookHasEffect | hookFlags,
@@ -1809,17 +1818,18 @@ function mountLayoutEffect(
   create: () => (() => void) | void,
   deps: Array<mixed> | void | null,
 ): void {
+  // Update === UpdateEffect
   let fiberFlags: Flags = UpdateEffect;
-  if (enableSuspenseLayoutEffectSemantics) {
-    fiberFlags |= LayoutStaticEffect;
+  if (enableSuspenseLayoutEffectSemantics) { // true
+    fiberFlags |= LayoutStaticEffect; // LayoutStatic
   }
   if (
     __DEV__ &&
-    enableStrictEffects &&
+    enableStrictEffects && // false
     (currentlyRenderingFiber.mode & StrictEffectsMode) !== NoMode
   ) {
     fiberFlags |= MountLayoutDevEffect;
-  }
+  } // Layout === HookLayout
   return mountEffectImpl(fiberFlags, HookLayout, create, deps);
 }
 
@@ -2264,7 +2274,7 @@ function dispatchReducerAction<S, A>(
       );
     }
   }
-
+  // 返回Sync === 1
   const lane = requestUpdateLane(fiber);
 
   const update: Update<S, A> = {
@@ -2318,6 +2328,7 @@ function dispatchSetState<S, A>(
     enqueueRenderPhaseUpdate(queue, update);
   } else {
     // queue.pending === update ,update.next -> update
+    //插入update 到queue.pending , update.next -> update 循环指针
     enqueueUpdate(fiber, queue, update, lane);
 
     const alternate = fiber.alternate;
@@ -2426,6 +2437,8 @@ function enqueueUpdate<S, A>(
       // This is the first update. Create a circular list.
       update.next = update;
     } else {
+      // pending === update，update.next -> update循环指针
+      // 插入一个newUpdate , pending = update,update.next-> newUpdate , newUpdate.next -> update
       update.next = pending.next;
       pending.next = update;
     }

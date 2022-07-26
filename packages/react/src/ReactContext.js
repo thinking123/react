@@ -11,12 +11,13 @@ import {REACT_PROVIDER_TYPE, REACT_CONTEXT_TYPE} from 'shared/ReactSymbols';
 
 import type {ReactContext} from 'shared/ReactTypes';
 
+//创建 context
 export function createContext<T>(defaultValue: T): ReactContext<T> {
   // TODO: Second argument used to be an optional `calculateChangedBits`
   // function. Warn to reserve for future use?
 
   const context: ReactContext<T> = {
-    $$typeof: REACT_CONTEXT_TYPE,
+    $$typeof: REACT_CONTEXT_TYPE, //  Symbol.for('react.context')
     // As a workaround to support multiple concurrent renderers, we categorize
     // some renderers as primary and others as secondary. We only expect
     // there to be two concurrent renderers at most: React Native (primary) and
@@ -37,7 +38,7 @@ export function createContext<T>(defaultValue: T): ReactContext<T> {
   };
 
   context.Provider = {
-    $$typeof: REACT_PROVIDER_TYPE,
+    $$typeof: REACT_PROVIDER_TYPE, //  Symbol.for('react.provider')
     _context: context,
   };
 
