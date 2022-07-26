@@ -85,10 +85,14 @@ describe('ReactDOM', () => {
         </div>
       );
     }
+
+    const useData = props => {
+      return '12';
+    };
     function Ch1(props) {
       const [sb, setSb] = React.useState(1);
       const ref = React.useRef();
-
+      const d = useData(props);
       React.useEffect(() => {
         console.log('Ch1 useEffect', sb);
         console.log('Ch1 ref', ref.current);
@@ -116,6 +120,7 @@ describe('ReactDOM', () => {
             }}>
             {props.uuid}
             {sb !== 2 && <div>{sb}</div>}
+            {d}
             <Ch2 />
           </div>
         </TestContext.Provider>
@@ -203,7 +208,7 @@ describe('ReactDOM', () => {
     //   );
     // });
 
-    return  await new Promise((_res, rej) => {
+    return await new Promise((_res, rej) => {
       console.log('not res');
       res = _res;
 
