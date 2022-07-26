@@ -40,34 +40,67 @@ describe('ReactDOM', () => {
     const TestContext = React.createContext({
       tv: 1,
     });
+
+    function Ch3(props, ref) {
+      React.useEffect(() => {
+        console.log('Ch3 useEffect', props.id);
+        return () => {
+          console.log('Ch3 useEffect cb', props.id);
+        };
+      }, [props.id]);
+
+      React.useImperativeHandle(ref, () => ({
+        focus: () => {
+          console.log('focus ch3');
+        },
+      }));
+      return <div>{props.id}</div>;
+    }
+
+    const Ch33 = React.forwardRef(Ch3);
+
     function Ch2() {
       const [sb, setSb] = React.useState([1, 2]);
       const c = React.useContext(TestContext);
+      const ch3Ref = React.useRef();
 
-      // React.useImperativeHandle()
+      React.useEffect(() => {
+        console.log('Ch2 useEffect', sb);
+        return () => {
+          console.log('Ch2 useEffect cb', sb);
+        };
+      }, [sb]);
       return (
         <div
           onClick={() => {
             setSb(pre => [...pre, sb.length]);
+            ch3Ref.current.focus();
           }}
           ref={buttonRef2}>
           {sb.map((_sb, i) => {
             <span key={i}>{_sb}</span>;
           })}
-          {c}
+          {c.tv}
+          <Ch33 ref={ch3Ref} id={sb} />
         </div>
       );
     }
     function Ch1(props) {
       const [sb, setSb] = React.useState(1);
       const ref = React.useRef();
-      ref.current = {
-        b: 12,
-      };
 
       React.useEffect(() => {
-        console.log('ref', ref.current);
+        console.log('Ch1 useEffect', sb);
+        console.log('Ch1 ref', ref.current);
+
+        return () => {
+          console.log('Ch1 useEffect cb', sb);
+        };
       }, [sb]);
+      React.useLayoutEffect(() => {
+        console.log('Ch1 layout');
+      });
+
       return (
         <TestContext.Provider
           value={{
@@ -76,10 +109,14 @@ describe('ReactDOM', () => {
           <div
             ref={buttonRef1}
             onClick={() => {
+              ref.current = {
+                b: 12,
+              };
               setSb(pre => pre + 1);
             }}>
             {props.uuid}
-            {sb !== 2 && <Ch2 />}
+            {sb !== 2 && <div>{sb}</div>}
+            <Ch2 />
           </div>
         </TestContext.Provider>
       );
@@ -87,7 +124,7 @@ describe('ReactDOM', () => {
     function Parent() {
       const [sb, setSb] = React.useState(10);
       const [sb1, setSb1] = React.useState(100);
-      const [state, dispatch] = useReducer(
+      const [state, dispatch] = React.useReducer(
         (state, action) => {
           switch (action.type) {
             case 'dc':
@@ -102,24 +139,26 @@ describe('ReactDOM', () => {
       );
 
       React.useEffect(() => {
-        console.log('log useEffect', sb);
-        // console.log('log useEffect', sb1);
-
+        console.log('Parent log useEffect', sb);
         return () => {
-          console.log('log useEffect', sb);
+          console.log('Parent log useEffect cb', sb);
         };
       }, [sb]);
 
       React.useCallback(() => {
-        console.log('sb1');
-      }, [sb1]);
+        console.log('Parent sb1', state, sb1);
+      }, [sb1, state]);
 
       React.useLayoutEffect(() => {
-        console.log('layout');
+        console.log('Parent layout');
       });
       return (
         <div
           ref={buttonRef}
+          className="testClassName"
+          style={{
+            maxHeight: '100px',
+          }}
           onClick={event => {
             event.preventDefault();
             setSb(pre => pre + 1);
@@ -164,12 +203,16 @@ describe('ReactDOM', () => {
     //   );
     // });
 
-    await new Promise((_res, rej) => {
+    return  await new Promise((_res, rej) => {
       console.log('not res');
       res = _res;
+
+      setTimeout(() => {
+        _res();
+      });
     });
 
-    return '';
+    // return '';
     // try {
     //   ReactDOM.render(<Parent />, container);
     //   buttonRef.click();
