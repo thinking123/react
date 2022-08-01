@@ -103,6 +103,7 @@ const isInputPending =
 
 const continuousOptions = {includeContinuous: enableIsInputPendingContinuous};
 
+// 时间heap(taskQueue) 拿到 已经过期的task ，插入 任务heap(taskQueue)
 function advanceTimers(currentTime) {
   // Check for tasks that are no longer delayed and add them to the queue.
   let timer = peek(timerQueue);
@@ -110,6 +111,7 @@ function advanceTimers(currentTime) {
     if (timer.callback === null) {
       // Timer was cancelled.
       pop(timerQueue);
+      //开始时间已经超过
     } else if (timer.startTime <= currentTime) {
       // Timer fired. Transfer to the task queue.
       pop(timerQueue);
@@ -188,17 +190,21 @@ function flushWork(hasTimeRemaining, initialTime) {
 
 function workLoop(hasTimeRemaining, initialTime) {
   let currentTime = initialTime;
+  //刷新时间和任务heap
   advanceTimers(currentTime);
+  //获取优先级最高的 task
   currentTask = peek(taskQueue);
   while (
     currentTask !== null &&
     !(enableSchedulerDebugging && isSchedulerPaused)
   ) {
     if (
+      //任务还没有到过期时间
       currentTask.expirationTime > currentTime &&
       (!hasTimeRemaining || shouldYieldToHost())
     ) {
       // This currentTask hasn't expired, and we've reached the deadline.
+      //将控制器交给浏览器，执行paint 等
       break;
     }
     const callback = currentTask.callback;
@@ -229,6 +235,7 @@ function workLoop(hasTimeRemaining, initialTime) {
     } else {
       pop(taskQueue);
     }
+    //获取下个任务 优先级最高的
     currentTask = peek(taskQueue);
   }
   // Return whether there's additional work
@@ -436,7 +443,7 @@ const maxInterval = maxYieldMs;
 let startTime = -1;
 
 let needsPaint = false;
-
+// 任务执行是否超过了最小帧数 5ms
 function shouldYieldToHost() {
   const timeElapsed = getCurrentTime() - startTime;
   if (timeElapsed < frameInterval) {
@@ -511,8 +518,9 @@ function forceFrameRate(fps) {
     frameInterval = frameYieldMs;
   }
 }
-
+//宏任务
 const performWorkUntilDeadline = () => {
+  // scheduledHostCallback === flushWork
   if (scheduledHostCallback !== null) {
     const currentTime = getCurrentTime();
     // Keep track of the start time so we can measure how long the main thread
@@ -533,6 +541,7 @@ const performWorkUntilDeadline = () => {
       if (hasMoreWork) {
         // If there's more work, schedule the next message event at the end
         // of the preceding one.
+         //发送 MessageChannel 宏任务
         schedulePerformWorkUntilDeadline();
       } else {
         isMessageLoopRunning = false;
@@ -583,6 +592,7 @@ function requestHostCallback(callback) {
   scheduledHostCallback = callback;
   if (!isMessageLoopRunning) {
     isMessageLoopRunning = true;
+    //发送 MessageChannel 宏任务
     schedulePerformWorkUntilDeadline();
   }
 }
