@@ -281,7 +281,7 @@ function ChildReconciler(shouldTrackSideEffects) {
     returnFiber: Fiber,
     currentFirstChild: Fiber | null,
   ): null {
-    if (!shouldTrackSideEffects) {
+    if (!shouldTrackSideEffects) { // false
       // Noop.
       return null;
     }
@@ -361,6 +361,7 @@ function ChildReconciler(shouldTrackSideEffects) {
     // This is simpler for the single child case. We only need to do a
     // placement for inserting new children.
     // shouldTrackSideEffects === true
+    // HostRoot 下面的child 设置 Placement
     if (shouldTrackSideEffects && newFiber.alternate === null) {
       // 创建的filber alternate === null , 设置flag === Placement
       // 插入 fiber
@@ -431,7 +432,7 @@ function ChildReconciler(shouldTrackSideEffects) {
         return existing;
       }
     }
-    // Insert
+    // Insert , 添加新的 html
     const created = createFiberFromElement(element, returnFiber.mode, lanes);
     created.ref = coerceRef(returnFiber, current, element);
     created.return = returnFiber;
@@ -780,6 +781,8 @@ function ChildReconciler(shouldTrackSideEffects) {
     let newIdx = 0;
     let nextOldFiber = null;
     for (; oldFiber !== null && newIdx < newChildren.length; newIdx++) {
+      // todo 之前 null -> span html，多了 html
+      // 新插入了一个 html
       if (oldFiber.index > newIdx) {
         nextOldFiber = oldFiber;
         oldFiber = null;
@@ -792,6 +795,7 @@ function ChildReconciler(shouldTrackSideEffects) {
         newChildren[newIdx],
         lanes,
       );
+      // 删除了 newFiber
       if (newFiber === null) {
         // TODO: This breaks on empty slots like null children. That's
         // unfortunate because it triggers the slow path all the time. We need
@@ -838,12 +842,16 @@ function ChildReconciler(shouldTrackSideEffects) {
       // If we don't have any more existing children we can choose a fast path
       // since the rest will all be insertions.
       // newIdx , lastPlacedIndex : 0
+      // init
       for (; newIdx < newChildren.length; newIdx++) {
         const newFiber = createChild(returnFiber, newChildren[newIdx], lanes);
         if (newFiber === null) {
           continue;
         }
         // flags = Forked
+        // 设置 fiber 的 index === newIdx
+        // 如果 child 是null ，但是 index 还是迭代之后的
+        // 每个 fiber 都有index [null (index===0), 1 , undefined]
         lastPlacedIndex = placeChild(newFiber, lastPlacedIndex, newIdx);
         if (previousNewFiber === null) {
           // TODO: Move out of the loop. This only happens for the first run.

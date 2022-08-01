@@ -264,7 +264,7 @@ function safelyAttachRef(current: Fiber, nearestMountedAncestor: Fiber | null) {
     captureCommitPhaseError(current, nearestMountedAncestor, error);
   }
 }
-
+// 删除 ref
 function safelyDetachRef(current: Fiber, nearestMountedAncestor: Fiber | null) {
   const ref = current.ref;
   if (ref !== null) {
@@ -354,6 +354,15 @@ function commitBeforeMutationEffects_begin() {
     }
 
     const child = fiber.child;
+    /*
+const BeforeMutationMask =
+  Update |
+  Snapshot |
+  (enableCreateEventHandleAPI
+    ?
+      ChildDeletion | Visibility
+    : 0);
+    */
     if (
       (fiber.subtreeFlags & BeforeMutationMask) !== NoFlags &&
       child !== null
@@ -496,9 +505,9 @@ function commitBeforeMutationEffectsOnFiber(finishedWork: Fiber) {
     resetCurrentDebugFiberInDEV();
   }
 }
-
+// 删除 fiber
 function commitBeforeMutationEffectsDeletion(deletion: Fiber) {
-  if (enableCreateEventHandleAPI) {
+  if (enableCreateEventHandleAPI) { // true
     // TODO (effects) It would be nice to avoid calling doesFiberContain()
     // Maybe we can repurpose one of the subtreeFlags positions for this instead?
     // Use it to store which part of the tree the focused instance is in?
@@ -509,11 +518,11 @@ function commitBeforeMutationEffectsDeletion(deletion: Fiber) {
     }
   }
 }
-
+ // 执行 useEffect , layout, destory function
 function commitHookEffectListUnmount(
   flags: HookFlags,
   finishedWork: Fiber,
-  nearestMountedAncestor: Fiber | null,
+  nearestMountedAncestor: Fiber | null, // parentFiber
 ) {
   // useEffect : pushEffect()
   /*
@@ -538,11 +547,13 @@ function commitHookEffectListUnmount(
         const destroy = effect.destroy;
         effect.destroy = undefined;
         if (destroy !== undefined) {
-          if (enableSchedulingProfiler) {
+          if (enableSchedulingProfiler) { // true
+            // useEffect
             if ((flags & HookPassive) !== NoHookEffect) {
-              markComponentPassiveEffectUnmountStarted(finishedWork);
+              markComponentPassiveEffectUnmountStarted(finishedWork); // log
             } else if ((flags & HookLayout) !== NoHookEffect) {
-              markComponentLayoutEffectUnmountStarted(finishedWork);
+              // useLayoutEffect
+              markComponentLayoutEffectUnmountStarted(finishedWork);// log
             }
           }
 
@@ -571,7 +582,7 @@ function commitHookEffectListUnmount(
     } while (effect !== firstEffect);
   }
 }
-
+// 执行 useEffect ,create function
 function commitHookEffectListMount(flags: HookFlags, finishedWork: Fiber) {
   const updateQueue: FunctionComponentUpdateQueue | null = (finishedWork.updateQueue: any);
   const lastEffect = updateQueue !== null ? updateQueue.lastEffect : null;
@@ -582,7 +593,7 @@ function commitHookEffectListMount(flags: HookFlags, finishedWork: Fiber) {
       if ((effect.tag & flags) === flags) {
         if (enableSchedulingProfiler) {
           if ((flags & HookPassive) !== NoHookEffect) {
-            markComponentPassiveEffectMountStarted(finishedWork);
+            markComponentPassiveEffectMountStarted(finishedWork); // log
           } else if ((flags & HookLayout) !== NoHookEffect) {
             markComponentLayoutEffectMountStarted(finishedWork);
           }
@@ -727,7 +738,7 @@ function commitLayoutEffectOnFiber(
         if (
           !enableSuspenseLayoutEffectSemantics ||
           !offscreenSubtreeWasHidden
-        ) {
+        ) { // true
           // At this point layout effects have already been destroyed (during mutation phase).
           // This is done to prevent sibling component effects from interfering with each other,
           // e.g. a destroy function in one component should never override a ref set
@@ -1033,9 +1044,10 @@ function commitLayoutEffectOnFiber(
   }
 
   if (!enableSuspenseLayoutEffectSemantics || !offscreenSubtreeWasHidden) {
-    if (enableScopeAPI) {
+    if (enableScopeAPI) { // true
       // TODO: This is a temporary solution that allowed us to transition away
       // from React Flare on www.
+      // 挂载 ref
       if (finishedWork.flags & Ref && finishedWork.tag !== ScopeComponent) {
         commitAttachRef(finishedWork);
       }
@@ -1273,6 +1285,7 @@ function commitAttachRef(finishedWork: Fiber) {
           recordLayoutEffectDuration(finishedWork);
         }
       } else {
+        // callback ref : ref = (dom => {this.btn = dom})
         retVal = ref(instanceToUse);
       }
       if (__DEV__) {
@@ -1454,7 +1467,8 @@ function getHostParentFiber(fiber: Fiber): Fiber {
       'in React. Please file an issue.',
   );
 }
-
+// fiber(tag === HostRoot, HostComponent)
+// 返回顶端 或者 html fiber
 function isHostParent(fiber: Fiber): boolean {
   return (
     fiber.tag === HostComponent ||
@@ -1472,6 +1486,7 @@ function getHostSibling(fiber: Fiber): ?Instance {
   siblings: while (true) {
     // If we didn't find anything, let's try the next sibling.
     while (node.sibling === null) {
+      /// isHostParent fiber 是 html 或者 root
       if (node.return === null || isHostParent(node.return)) {
         // If we pop out of the root or hit the parent the fiber we are the
         // last sibling.
@@ -1510,11 +1525,12 @@ function getHostSibling(fiber: Fiber): ?Instance {
 }
 
 function commitPlacement(finishedWork: Fiber): void {
-  if (!supportsMutation) {
+  if (!supportsMutation) { // true
     return;
   }
 
   // Recursively insert all host nodes into the parent.
+  // 返回 fiber(tag === HostRoot)
   const parentFiber = getHostParentFiber(finishedWork);
 
   // Note: these two variables *must* always be updated together.
@@ -1690,6 +1706,7 @@ function recursivelyTraverseDeletionEffects(
   // TODO: Use a static flag to skip trees that don't have unmount effects
   let child = parent.child;
   while (child !== null) {
+    // 循环删除子集 html ， 广度优先
     commitDeletionEffectsOnFiber(finishedRoot, nearestMountedAncestor, child);
     child = child.sibling;
   }
@@ -1700,14 +1717,14 @@ function commitDeletionEffectsOnFiber(
   nearestMountedAncestor: Fiber,
   deletedFiber: Fiber,
 ) {
-  onCommitUnmount(deletedFiber);
+  onCommitUnmount(deletedFiber); // log
 
   // The cases in this outer switch modify the stack before they traverse
   // into their subtree. There are simpler cases in the inner switch
   // that don't modify the stack.
   switch (deletedFiber.tag) {
     case HostComponent: {
-      if (!offscreenSubtreeWasHidden) {
+      if (!offscreenSubtreeWasHidden) { // true
         safelyDetachRef(deletedFiber, nearestMountedAncestor);
       }
       // Intentional fallthrough to next branch
@@ -1717,7 +1734,7 @@ function commitDeletionEffectsOnFiber(
       // We only need to remove the nearest host child. Set the host parent
       // to `null` on the stack to indicate that nested children don't
       // need to be removed.
-      if (supportsMutation) {
+      if (supportsMutation) { // true
         const prevHostParent = hostParent;
         const prevHostParentIsContainer = hostParentIsContainer;
         hostParent = null;
@@ -1733,11 +1750,13 @@ function commitDeletionEffectsOnFiber(
           // Now that all the child effects have unmounted, we can remove the
           // node from the tree.
           if (hostParentIsContainer) {
+            //     (container.parentNode: any).removeChild(child);
             removeChildFromContainer(
               ((hostParent: any): Container),
               (deletedFiber.stateNode: Instance | TextInstance),
             );
           } else {
+            // 从parent html 删除 html
             removeChild(
               ((hostParent: any): Instance),
               (deletedFiber.stateNode: Instance | TextInstance),
@@ -1813,8 +1832,9 @@ function commitDeletionEffectsOnFiber(
     case ForwardRef:
     case MemoComponent:
     case SimpleMemoComponent: {
-      if (!offscreenSubtreeWasHidden) {
+      if (!offscreenSubtreeWasHidden) { // true
         const updateQueue: FunctionComponentUpdateQueue | null = (deletedFiber.updateQueue: any);
+        //执行 function 组件的 useEffect , destory function
         if (updateQueue !== null) {
           const lastEffect = updateQueue.lastEffect;
           if (lastEffect !== null) {
@@ -1832,13 +1852,13 @@ function commitDeletionEffectsOnFiber(
                   );
                 } else if ((tag & HookLayout) !== NoHookEffect) {
                   if (enableSchedulingProfiler) {
-                    markComponentLayoutEffectUnmountStarted(deletedFiber);
+                    markComponentLayoutEffectUnmountStarted(deletedFiber); // log
                   }
 
                   if (
                     enableProfilerTimer &&
                     enableProfilerCommitHooks &&
-                    deletedFiber.mode & ProfileMode
+                    deletedFiber.mode & ProfileMode // false
                   ) {
                     startLayoutEffectTimer();
                     safelyCallDestroy(
@@ -2047,7 +2067,8 @@ export function isSuspenseBoundaryBeingHidden(
   }
   return false;
 }
-
+// 执行 useEffect , useLayoutEffect(create , destory) , 挂载init html (fiber(host)) 的 child
+// 其他的 html 在 beginwork, complateWork 已经挂载 (appendAllChildren)
 export function commitMutationEffects(
   root: FiberRoot,
   finishedWork: Fiber,
@@ -2072,6 +2093,7 @@ function recursivelyTraverseMutationEffects(
   // Deletions effects can be scheduled on any fiber type. They need to happen
   // before the children effects hae fired.
   const deletions = parentFiber.deletions;
+  // 是否后删除的fiber
   if (deletions !== null) {
     for (let i = 0; i < deletions.length; i++) {
       const childToDelete = deletions[i];
@@ -2084,10 +2106,23 @@ function recursivelyTraverseMutationEffects(
   }
 
   const prevDebugFiber = getCurrentDebugFiberInDEV();
+  /*
+
+  MutationMask = Placement |
+  Update |
+  ChildDeletion |
+  ContentReset |
+  Ref |
+  Hydrating |
+  Visibility;
+
+  */
+ // subtreeFlags === Placement(fiberHost) | Update(useLayoutEffect) | Ref (ref)
   if (parentFiber.subtreeFlags & MutationMask) {
     let child = parentFiber.child;
     while (child !== null) {
       setCurrentDebugFiberInDEV(child);
+      //先深度优先遍历 child ,然后广度遍历 sibling
       commitMutationEffectsOnFiber(child, root, lanes);
       child = child.sibling;
     }
@@ -2111,6 +2146,7 @@ function commitMutationEffectsOnFiber(
     case ForwardRef:
     case MemoComponent:
     case SimpleMemoComponent: {
+      //迭代child 深度优先
       recursivelyTraverseMutationEffects(root, finishedWork, lanes);
       commitReconciliationEffects(finishedWork);
 
@@ -2136,7 +2172,7 @@ function commitMutationEffectsOnFiber(
         if (
           enableProfilerTimer &&
           enableProfilerCommitHooks &&
-          finishedWork.mode & ProfileMode
+          finishedWork.mode & ProfileMode // false
         ) {
           try {
             startLayoutEffectTimer();
@@ -2183,7 +2219,7 @@ function commitMutationEffectsOnFiber(
           safelyDetachRef(current, current.return);
         }
       }
-      if (supportsMutation) {
+      if (supportsMutation) { // true
         // TODO: ContentReset gets cleared by the children during the commit
         // phase. This is a refactor hazard because it means we must read
         // flags the flags after `commitReconciliationEffects` has already run;
@@ -2258,6 +2294,7 @@ function commitMutationEffectsOnFiber(
             current !== null ? current.memoizedProps : newText;
 
           try {
+            // textHtml.nodeValue = newText
             commitTextUpdate(textInstance, oldText, newText);
           } catch (error) {
             captureCommitPhaseError(finishedWork, finishedWork.return, error);
@@ -2287,7 +2324,7 @@ function commitMutationEffectsOnFiber(
             }
           }
         }
-        if (supportsPersistence) {
+        if (supportsPersistence) { // false
           const containerInfo = root.containerInfo;
           const pendingChildren = root.pendingChildren;
           try {
@@ -2431,6 +2468,7 @@ function commitMutationEffectsOnFiber(
       return;
     }
     default: {
+      // <Context.Provider> , <Fragment>
       recursivelyTraverseMutationEffects(root, finishedWork, lanes);
       commitReconciliationEffects(finishedWork);
 
@@ -2438,11 +2476,13 @@ function commitMutationEffectsOnFiber(
     }
   }
 }
+// Reconciliation(协调)
 function commitReconciliationEffects(finishedWork: Fiber) {
   // Placement effects (insertions, reorders) can be scheduled on any fiber
   // type. They needs to happen after the children effects have fired, but
   // before the effects on this fiber have fired.
   const flags = finishedWork.flags;
+  // 插入新的 html
   if (flags & Placement) {
     try {
       commitPlacement(finishedWork);
@@ -2460,7 +2500,8 @@ function commitReconciliationEffects(finishedWork: Fiber) {
     finishedWork.flags &= ~Hydrating;
   }
 }
-
+// 执行 useLayoutEffect , 挂载 ref
+// 深度优先执行
 export function commitLayoutEffects(
   finishedWork: Fiber,
   root: FiberRoot,
@@ -2540,7 +2581,7 @@ function commitLayoutEffects_begin(
         continue;
       }
     }
-
+    //  LayoutMask = Update | Callback | Ref | Visibility
     if ((fiber.subtreeFlags & LayoutMask) !== NoFlags && firstChild !== null) {
       firstChild.return = fiber;
       nextEffect = firstChild;
@@ -2557,6 +2598,7 @@ function commitLayoutMountEffects_complete(
 ) {
   while (nextEffect !== null) {
     const fiber = nextEffect;
+    // const LayoutMask = Update | Callback | Ref | Visibility;
     if ((fiber.flags & LayoutMask) !== NoFlags) {
       const current = fiber.alternate;
       setCurrentDebugFiberInDEV(fiber);
@@ -3050,6 +3092,7 @@ function commitPassiveUnmountEffects_begin() {
     // 获取设置了 flags =  Passive | ChildDeletion , subtreeFlags != child.subtreeFlags | child.flags
     // useEffect() -> fiber.flags != Passive
     // 获取最底层的 fiber
+    //  PassiveMask = Passive | ChildDeletion;
     if ((fiber.subtreeFlags & PassiveMask) !== NoFlags && child !== null) {
       child.return = fiber;
       nextEffect = child;

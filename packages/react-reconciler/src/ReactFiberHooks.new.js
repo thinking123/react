@@ -380,6 +380,7 @@ export function renderWithHooks<Props, SecondArg>(
   currentlyRenderingFiber = workInProgress;
 
   if (__DEV__) {
+    // update 从 _debugHookTypes 获取 hooks name 列表
     hookTypesDev =
       current !== null
         ? ((current._debugHookTypes: any): Array<HookType>)
@@ -492,6 +493,7 @@ export function renderWithHooks<Props, SecondArg>(
 
   // This check uses currentHook so that it works the same in DEV and prod bundles.
   // hookTypesDev could catch more cases (e.g. context) but only in DEV bundles.
+  // currentHook（current fiber ） 指向 hook 链表 完成迭代之后 next === null
   const didRenderTooFewHooks =
     currentHook !== null && currentHook.next !== null;
 
@@ -679,7 +681,8 @@ function mountWorkInProgressHook(): Hook {
   }
   return workInProgressHook;
 }
-
+// 从 current 的 memoizedState（useState 的hook）链表，
+//迭代的 cp 到 alternate 的 memoizedState 链表
 function updateWorkInProgressHook(): Hook {
   // This function is used both for updates and for re-renders triggered by a
   // render phase update. It assumes there is either a current hook we can
@@ -696,6 +699,7 @@ function updateWorkInProgressHook(): Hook {
     }
   } else {
     // fiber.memoizedState = hook1, hook1.next->hook2
+    // current 的下一个  hook
     nextCurrentHook = currentHook.next;
   }
 
@@ -718,9 +722,9 @@ function updateWorkInProgressHook(): Hook {
     if (nextCurrentHook === null) {
       throw new Error('Rendered more hooks than during the previous render.');
     }
-
+    // current 当前 迭代到的 hook
     currentHook = nextCurrentHook;
-
+    // 从 currentfiber -> alternate fiber
     const newHook: Hook = {
       memoizedState: currentHook.memoizedState,
 
@@ -790,6 +794,7 @@ function updateReducer<S, I, A>(
   initialArg: I,
   init?: I => S,
 ): [S, Dispatch<A>] {
+  // 当前 从 current cp 的 hook state
   const hook = updateWorkInProgressHook();
   const queue = hook.queue;
 
@@ -801,12 +806,14 @@ function updateReducer<S, I, A>(
 
   queue.lastRenderedReducer = reducer;
 
+  // currentHook 是  current 当前的 hook state
   const current: Hook = (currentHook: any);
 
   // The last rebase update that is NOT part of the base state.
   let baseQueue = current.baseQueue;
 
   // The last pending update that hasn't been processed yet.
+  // pendingQueue === pending === state update === {} ，循环链表
   const pendingQueue = queue.pending;
   if (pendingQueue !== null) {
     // We have new updates that haven't been processed yet.
@@ -828,14 +835,16 @@ function updateReducer<S, I, A>(
         );
       }
     }
-    current.baseQueue = baseQueue = pendingQueue;
+    current.baseQueue = baseQueue = pendingQueue; //
     queue.pending = null;
   }
 
   if (baseQueue !== null) {
     // We have a queue to process.
+    // 循环链表baseQueue.next === update
     const first = baseQueue.next;
-    let newState = current.baseState;
+    // current === hook state
+    let newState = current.baseState; // baseState == initState
 
     let newBaseState = null;
     let newBaseQueueFirst = null;
@@ -908,9 +917,11 @@ function updateReducer<S, I, A>(
     // different from the current state.
     if (!is(newState, hook.memoizedState)) {
       // didReceiveUpdate
+      // useState 修改了 设置   didReceiveUpdate = true;
       markWorkInProgressReceivedUpdate();
     }
 
+    //
     hook.memoizedState = newState;
     hook.baseState = newBaseState;
     hook.baseQueue = newBaseQueueLast;
@@ -1560,6 +1571,7 @@ function mountState<S>(
     interleaved: null,
     lanes: NoLanes,
     dispatch: null, // === setState , setState(action)
+    // useReducer ,lastRenderedReducer === customReducer
     lastRenderedReducer: basicStateReducer,// lastRenderedReducer 保存计算的action , setState(pre=>pre+1)
     // pre=>pre+1 === newState = basicStateReducer(pre+1)
     lastRenderedState: (initialState: any), // lastRenderedState 保存上一次的 initialState
@@ -1735,7 +1747,7 @@ function mountEffectImpl(fiberFlags, hookFlags, create, deps): void {
     nextDeps,
   );
 }
-
+// useEffect 设置 flags 在之后更新
 function updateEffectImpl(fiberFlags, hookFlags, create, deps): void {
   const hook = updateWorkInProgressHook();
   const nextDeps = deps === undefined ? null : deps;
@@ -1755,6 +1767,7 @@ function updateEffectImpl(fiberFlags, hookFlags, create, deps): void {
 
   currentlyRenderingFiber.flags |= fiberFlags;
   //HasEffect  === HookHasEffect
+  //如果 deps 更新了 设置 hook.tag |= HookHasEffect
   hook.memoizedState = pushEffect(
     HookHasEffect | hookFlags,
     create,
@@ -1783,10 +1796,10 @@ function mountEffect(
       //2408  //8388608
       // Passive(ReactFiberFlags) === PassiveEffect
       // PassiveStatic === PassiveStaticEffect
-      PassiveEffect | PassiveStaticEffect,
+      PassiveEffect | PassiveStaticEffect, // fiberFlags
       // 8
       // Passive (ReactHookEffectTags) === HookPassive
-      HookPassive,
+      HookPassive, // hookFlags
       create,
       deps,
     );
@@ -1797,6 +1810,9 @@ function updateEffect(
   create: () => (() => void) | void,
   deps: Array<mixed> | void | null,
 ): void {
+  // update 的时候没有使用 PassiveStaticEffect
+  // mount flags = PassiveEffect | PassiveStaticEffect
+  // update flags = PassiveEffect
   return updateEffectImpl(PassiveEffect, HookPassive, create, deps);
 }
 
@@ -1818,7 +1834,7 @@ function mountLayoutEffect(
   create: () => (() => void) | void,
   deps: Array<mixed> | void | null,
 ): void {
-  // Update === UpdateEffect
+  // Update === alias (UpdateEffect)
   let fiberFlags: Flags = UpdateEffect;
   if (enableSuspenseLayoutEffectSemantics) { // true
     fiberFlags |= LayoutStaticEffect; // LayoutStatic
@@ -1829,7 +1845,7 @@ function mountLayoutEffect(
     (currentlyRenderingFiber.mode & StrictEffectsMode) !== NoMode
   ) {
     fiberFlags |= MountLayoutDevEffect;
-  } // Layout === HookLayout
+  } // Layout === alias (HookLayout) ===  0b0100
   return mountEffectImpl(fiberFlags, HookLayout, create, deps);
 }
 
@@ -1988,15 +2004,18 @@ function updateMemo<T>(
   const hook = updateWorkInProgressHook();
   const nextDeps = deps === undefined ? null : deps;
   const prevState = hook.memoizedState;
+  // 如果deps === undefined ，每次都会重新计算
   if (prevState !== null) {
     // Assume these are defined. If they're not, areHookInputsEqual will warn.
     if (nextDeps !== null) {
       const prevDeps: Array<mixed> | null = prevState[1];
+        // useMemo deps 是否修改
       if (areHookInputsEqual(nextDeps, prevDeps)) {
         return prevState[0];
       }
     }
   }
+  //修改了 deps 重新计算useMemo
   const nextValue = nextCreate();
   hook.memoizedState = [nextValue, nextDeps];
   return nextValue;

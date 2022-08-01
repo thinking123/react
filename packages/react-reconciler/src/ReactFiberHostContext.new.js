@@ -84,8 +84,11 @@ function getHostContext(): HostContext {
   return context;
 }
 
+// push fiber 和 {ancestorInfo,namespace}
+// contextFiberStackCursor , contextStackCursor
 function pushHostContext(fiber: Fiber): void {
   // rootInstanceStackCursor.current === container (id=root)
+  // container id === "root"
   const rootInstance: Container = requiredContext(
     rootInstanceStackCursor.current,
   );

@@ -744,6 +744,7 @@ function bubbleProperties(completedWork: Fiber) {
         // so we should bubble those up even during a bailout. All the other
         // flags have a lifetime only of a single render + commit, so we should
         // ignore them.
+        // StaticMask = LayoutStatic | PassiveStatic | RefStatic;
         subtreeFlags |= child.subtreeFlags & StaticMask;
         subtreeFlags |= child.flags & StaticMask;
 
@@ -755,10 +756,13 @@ function bubbleProperties(completedWork: Fiber) {
         child = child.sibling;
       }
     }
-
+    // subtreeFlags 合并了所有的 child 的 flags 以及 child 的 subtreeFlags
+    //  parent 的 subtreeFlags = 所有child 以及子集 flags 的 合并
     completedWork.subtreeFlags |= subtreeFlags;
   }
 
+  // childLanes 合并了所有的 child 的 lane 以及 child 的 childLanes
+  // parent 的 childLanes = 所有child 以及子集 child 的 合并
   completedWork.childLanes = newChildLanes;
 
   return didBailout;

@@ -942,6 +942,7 @@ function updateProfiler(
 
 function markRef(current: Fiber | null, workInProgress: Fiber) {
   const ref = workInProgress.ref;
+  // && 优先级高于 ||
   if (
     (current === null && ref !== null) ||
     (current !== null && current.ref !== ref)

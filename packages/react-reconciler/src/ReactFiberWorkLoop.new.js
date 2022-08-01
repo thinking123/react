@@ -647,7 +647,7 @@ export function scheduleUpdateOnFiber(
     }
 
     ensureRootIsScheduled(root, eventTime);
-    if (
+    if ( // false
       lane === SyncLane &&
       executionContext === NoContext && // init false
       (fiber.mode & ConcurrentMode) === NoMode &&
@@ -714,6 +714,7 @@ function markUpdateLaneFromFiberToRoot(
   let node = sourceFiber;
   // return === parent fiber
   let parent = sourceFiber.return; // init return === null
+  // 合并所有 child lane 到 parent.childLanes
   while (parent !== null) {
     parent.childLanes = mergeLanes(parent.childLanes, lane);
     alternate = parent.alternate;
@@ -1307,6 +1308,7 @@ function markRootSuspended(root, suspendedLanes) {
 
 // This is the entry point for synchronous tasks that don't go
 // through Scheduler
+// 重新遍历fiber ， 创建和更新 fiber html ，执行 hooks
 function performSyncWorkOnRoot(root) {
   // true
   if (enableProfilerTimer && enableProfilerNestedUpdatePhase) {
@@ -2215,6 +2217,8 @@ function commitRootImpl(
   // Update the first and last pending times on this root. The new first
   // pending time is whatever is left on the root fiber.
   let remainingLanes = mergeLanes(finishedWork.lanes, finishedWork.childLanes);
+  // 删除已经完成的lane 对应的entanglements[],eventTimes[],expirationTimes[]
+  //expiredLanes, === NoLanes
   markRootFinished(root, remainingLanes);
 
   if (root === workInProgressRoot) {
@@ -2237,7 +2241,7 @@ function commitRootImpl(
   if (
     (finishedWork.subtreeFlags & PassiveMask) !== NoFlags || // true
     (finishedWork.flags & PassiveMask) !== NoFlags
-  ) {
+  ) { // init rootDoesHavePassiveEffects === false
     if (!rootDoesHavePassiveEffects) {// true
       //todo debug
       rootDoesHavePassiveEffects = true;
@@ -2264,6 +2268,7 @@ function commitRootImpl(
   // to check for the existence of `firstEffect` to satisfy Flow. I think the
   // only other reason this optimization exists is because it affects profiling.
   // Reconsider whether this is necessary.
+  // root 或者 root child 是否有更新
   const subtreeHasEffects =
     (finishedWork.subtreeFlags &
       (BeforeMutationMask | MutationMask | LayoutMask | PassiveMask)) !==
@@ -2533,6 +2538,7 @@ export function flushPassiveEffects(): boolean {
   if (rootWithPendingPassiveEffects !== null) {
     // Cache the root since rootWithPendingPassiveEffects is cleared in
     // flushPassiveEffectsImpl
+    // 在完成 Commit 之后设置 root
     const root = rootWithPendingPassiveEffects;
     // Cache and clear the remaining lanes flag; it must be reset since this
     // method can be called from various places, not always from commitRoot

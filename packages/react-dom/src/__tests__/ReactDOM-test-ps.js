@@ -121,27 +121,27 @@ describe('ReactDOM', () => {
             {props.uuid}
             {sb !== 2 && <div>{sb}</div>}
             {d}
-            <Ch2 />
+            {/* <Ch2 /> */}
           </div>
         </TestContext.Provider>
       );
     }
     function Parent() {
-      const [sb, setSb] = React.useState(10);
-      const [sb1, setSb1] = React.useState(100);
-      const [state, dispatch] = React.useReducer(
-        (state, action) => {
-          switch (action.type) {
-            case 'dc':
-              return {count: state.count + 1};
-            case 'd':
-              return {count: state.count - 1};
-            default:
-              throw new Error();
-          }
-        },
-        {count: 1000},
-      );
+      const [sb, setSb] = React.useState(1);
+      const sbsb = React.useMemo(() => sb * sb, [sb]);
+      // const [state, dispatch] = React.useReducer(
+      //   (state, action) => {
+      //     switch (action.type) {
+      //       case 'dc':
+      //         return {count: state.count + 1};
+      //       case 'd':
+      //         return {count: state.count - 1};
+      //       default:
+      //         throw new Error();
+      //     }
+      //   },
+      //   {count: 1000},
+      // );
 
       React.useEffect(() => {
         console.log('Parent log useEffect', sb);
@@ -150,9 +150,9 @@ describe('ReactDOM', () => {
         };
       }, [sb]);
 
-      React.useCallback(() => {
-        console.log('Parent sb1', state, sb1);
-      }, [sb1, state]);
+      const cb = React.useCallback(() => {
+        console.log('Parent sb1', state);
+      }, [sbsb]);
 
       React.useLayoutEffect(() => {
         console.log('Parent layout');
@@ -167,14 +167,16 @@ describe('ReactDOM', () => {
           onClick={event => {
             event.preventDefault();
             setSb(pre => pre + 1);
-            setSb1(setSb1 => setSb1 + 1);
-            dispatch({
-              type: 'dc',
-            });
+            // setSb1(setSb1 => setSb1 + 1);
+            // dispatch({
+            //   type: 'dc',
+            // });
+            cb();
           }}>
-          {sb}
-          {state.count}
-          <Ch1 />
+          <p>{sbsb}</p>
+          {[1, 3].includes(sb) && <span>{sb}</span>}
+          <div>{sbsb}</div>
+          {[2].includes(sb) && <Ch1 />}
         </div>
       );
     }
