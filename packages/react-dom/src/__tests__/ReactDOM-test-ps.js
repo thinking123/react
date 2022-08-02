@@ -15,8 +15,9 @@ let ReactDOM;
 let ReactDOMClient;
 let Scheduler;
 let act;
+let Suspense;
 
-debugger;
+// debugger;
 describe('ReactDOM', () => {
   beforeEach(() => {
     jest.resetModules();
@@ -24,6 +25,7 @@ describe('ReactDOM', () => {
     ReactDOM = require('react-dom');
     Scheduler = require('scheduler');
     act = require('jest-react').act;
+    Suspense = require('react').Suspense;
     // ReactDOMServer = require('react-dom/server');
     // ReactTestUtils = require('react-dom/test-utils');
   });
@@ -129,51 +131,31 @@ describe('ReactDOM', () => {
 
     function Child1() {
       const [sb, setSb] = React.useState(1);
-      return (
-        <h1>
-          {sb}
-        </h1>
-      );
+      return <h1>{sb}</h1>;
     }
     function Child2(props) {
       return <h2>{props.sb}</h2>;
     }
     function Parent() {
       const [sb, setSb] = React.useState(1);
-      const sbsb = React.useMemo(() => sb * sb, [sb]);
-      React.useEffect(() => {
-        console.log('Parent log useEffect', sb);
-        return () => {
-          console.log('Parent log useEffect cb', sb);
-        };
-      }, [sb]);
-
-      const cb = React.useCallback(() => {
-        console.log('Parent sb1', state);
-      }, [sbsb]);
-
-      React.useLayoutEffect(() => {
-        console.log('Parent useLayoutEffect');
-        return () => {
-          console.log('Parent useLayoutEffect cb');
-        };
+      const LazyComponent = React.lazy(() => {
+        return new Promise(res => {
+          res({
+            default: Child2,
+          });
+        });
       });
 
       return (
         <div
           ref={buttonRef}
-          className="testClassName"
-          style={{
-            maxHeight: '100px',
-          }}
           onClick={event => {
             event.preventDefault();
             setSb(pre => pre + 1);
-            cb();
           }}>
-          <Child1/>
-
-          <Child2 sb={sb}/>
+          <Suspense fallback={<h1>Loading...</h1>}>
+            <LazyComponent sb={sb} />
+          </Suspense>
         </div>
       );
     }
@@ -181,15 +163,24 @@ describe('ReactDOM', () => {
     document.body.appendChild(container);
 
     ReactDOM.render(<Parent />, container);
-    buttonRef.current.dispatchEvent(
-      new Event('click', {bubbles: true, cancelable: true}),
-    );
-    buttonRef.current.dispatchEvent(
-      new Event('click', {bubbles: true, cancelable: true}),
-    );
-    buttonRef.current.dispatchEvent(
-      new Event('click', {bubbles: true, cancelable: true}),
-    );
+    act(() => {
+      buttonRef.current.dispatchEvent(
+        new Event('click', {bubbles: true, cancelable: true}),
+      );
+    });
+
+    act(() => {
+      buttonRef.current.dispatchEvent(
+        new Event('click', {bubbles: true, cancelable: true}),
+      );
+    });
+
+    // buttonRef.current.dispatchEvent(
+    //   new Event('click', {bubbles: true, cancelable: true}),
+    // );
+    // buttonRef.current.dispatchEvent(
+    //   new Event('click', {bubbles: true, cancelable: true}),
+    // );
     // buttonRef.current.dispatchEvent(
     //   new Event('click', {bubbles: true, cancelable: true}),
     // );

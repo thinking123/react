@@ -10,6 +10,9 @@
 let didWarnAboutMessageChannel = false;
 let enqueueTaskImpl = null;
 
+// task 插入 宏任务队列 （event loop 任务队列）,下一次任务迭代的时候执行task
+// nodejs 环境 使用: setImmediate
+// web 环境使用 : MessageChannel
 export default function enqueueTask(task: () => void) {
   if (enqueueTaskImpl === null) {
     try {
@@ -19,6 +22,7 @@ export default function enqueueTask(task: () => void) {
       const nodeRequire = module && module[requireString];
       // assuming we're in node, let's try to get node's
       // version of setImmediate, bypassing fake timers if any.
+      // setImmediate 宏任务（nodejs）
       enqueueTaskImpl = nodeRequire.call(module, 'timers').setImmediate;
     } catch (_err) {
       // we're in a browser
@@ -38,6 +42,7 @@ export default function enqueueTask(task: () => void) {
             }
           }
         }
+        // MessageChannel 宏任务（web）
         const channel = new MessageChannel();
         channel.port1.onmessage = callback;
         channel.port2.postMessage(undefined);

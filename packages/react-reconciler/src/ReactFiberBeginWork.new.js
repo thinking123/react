@@ -2000,7 +2000,7 @@ function updateSuspenseComponent(current, workInProgress, renderLanes) {
 
   // This is used by DevTools to force a boundary to suspend.
   if (__DEV__) {
-    if (shouldSuspend(workInProgress)) {
+    if (shouldSuspend(workInProgress)) { // log
       workInProgress.flags |= DidCapture;
     }
   }
@@ -2036,7 +2036,7 @@ function updateSuspenseComponent(current, workInProgress, renderLanes) {
       if (
         !enableSuspenseAvoidThisFallback ||
         nextProps.unstable_avoidThisFallback !== true
-      ) {
+      ) { // init true
         suspenseContext = addSubtreeSuspenseContext(
           suspenseContext,
           InvisibleParentSuspenseContext,
