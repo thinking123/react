@@ -2022,7 +2022,7 @@ function commitSuspenseHydrationCallbacks(
     }
   }
 }
-
+//suspense 连接 lazy promise listener
 function attachSuspenseRetryListeners(finishedWork: Fiber) {
   // If this boundary just timed out, then it will have a set of wakeables.
   // For each wakeable, attach a listener so that when it resolves, React
