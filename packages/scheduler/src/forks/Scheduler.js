@@ -7,7 +7,14 @@
  */
 
 /* eslint-disable no-var */
-
+/*
+任务调度
+1. 安装任务的执行等级按照优先级插入 task 和 timer（延迟） 队列
+2. 如果是延迟任务，timeout 延迟，如果不是延迟任务 使用MessageChannel 宏任务开始执行
+3. 宏任务从 task 或者 timer 内拿到最高优先级任务执行，一个任务是否能够执行需要判断是否任务的过期时间已经达到并且任务执行时间没有超过 5ms 阈值，任务执行完成之后弹出任务
+获取下个任务是否需要循环 MessageChannel 执行任务迭代，如果task 任务没有了，需要
+从timer（延迟）从拿任务，使用timeout延迟执行到达延迟时间之后继续MessageChannel 执行任务
+*/
 import {
   enableSchedulerDebugging,
   enableProfiling,
@@ -69,6 +76,7 @@ var LOW_PRIORITY_TIMEOUT = 10000;
 var IDLE_PRIORITY_TIMEOUT = maxSigned31BitInt;
 
 // Tasks are stored on a min heap
+// 优先级最高的(sortIndex最小的)在最顶端
 var taskQueue = [];
 var timerQueue = [];
 
@@ -104,6 +112,7 @@ const isInputPending =
 const continuousOptions = {includeContinuous: enableIsInputPendingContinuous};
 
 // 时间heap(taskQueue) 拿到 已经过期的task ，插入 任务heap(taskQueue)
+// 遍历 timerQueue ，获取过期的taks 插入到 taskQueue
 function advanceTimers(currentTime) {
   // Check for tasks that are no longer delayed and add them to the queue.
   let timer = peek(timerQueue);
@@ -131,13 +140,16 @@ function advanceTimers(currentTime) {
 
 function handleTimeout(currentTime) {
   isHostTimeoutScheduled = false;
+
   advanceTimers(currentTime);
 
   if (!isHostCallbackScheduled) {
     if (peek(taskQueue) !== null) {
       isHostCallbackScheduled = true;
+      //任务已经达到超时时间，开始执行
       requestHostCallback(flushWork);
     } else {
+      //还没有任务到达超时时间继续延迟
       const firstTimer = peek(timerQueue);
       if (firstTimer !== null) {
         requestHostTimeout(handleTimeout, firstTimer.startTime - currentTime);
@@ -200,6 +212,7 @@ function workLoop(hasTimeRemaining, initialTime) {
   ) {
     if (
       //任务还没有到过期时间
+      // 每个任务有 5ms 执行限制
       currentTask.expirationTime > currentTime &&
       (!hasTimeRemaining || shouldYieldToHost())
     ) {
@@ -240,10 +253,12 @@ function workLoop(hasTimeRemaining, initialTime) {
   }
   // Return whether there's additional work
   if (currentTask !== null) {
+    // 继续下一个宏任务执行 task
     return true;
   } else {
     const firstTimer = peek(timerQueue);
     if (firstTimer !== null) {
+      //延迟 任务
       requestHostTimeout(handleTimeout, firstTimer.startTime - currentTime);
     }
     return false;
@@ -319,6 +334,7 @@ function unstable_scheduleCallback(priorityLevel, callback, options) {
   if (typeof options === 'object' && options !== null) {
     var delay = options.delay;
     if (typeof delay === 'number' && delay > 0) {
+      //延迟任务
       startTime = currentTime + delay;
     } else {
       startTime = currentTime;
@@ -330,23 +346,24 @@ function unstable_scheduleCallback(priorityLevel, callback, options) {
   var timeout;
   switch (priorityLevel) {
     case ImmediatePriority:
-      timeout = IMMEDIATE_PRIORITY_TIMEOUT;
+      //马上执行的任务
+      timeout = IMMEDIATE_PRIORITY_TIMEOUT; // -1;
       break;
     case UserBlockingPriority:
-      timeout = USER_BLOCKING_PRIORITY_TIMEOUT;
+      timeout = USER_BLOCKING_PRIORITY_TIMEOUT; // 250
       break;
     case IdlePriority:
-      timeout = IDLE_PRIORITY_TIMEOUT;
+      timeout = IDLE_PRIORITY_TIMEOUT; //最大的整数
       break;
     case LowPriority:
-      timeout = LOW_PRIORITY_TIMEOUT;
+      timeout = LOW_PRIORITY_TIMEOUT;//10000
       break;
     case NormalPriority:
     default:
       timeout = NORMAL_PRIORITY_TIMEOUT; // 5000
       break;
   }
-
+  // 过期时间
   var expirationTime = startTime + timeout;
 
   var newTask = {
@@ -364,9 +381,12 @@ function unstable_scheduleCallback(priorityLevel, callback, options) {
   if (startTime > currentTime) {
     // This is a delayed task.
     newTask.sortIndex = startTime;
+    //延迟任务插入 timerQueue
     push(timerQueue, newTask);
+    //当前taskQueue 没有任务 ，并且newTask 是 timerQueue 最高级的任务
     if (peek(taskQueue) === null && newTask === peek(timerQueue)) {
       // All tasks are delayed, and this is the task with the earliest delay.
+      // 优先级更高的延迟任务进来了，刷新 timeout 时间
       if (isHostTimeoutScheduled) {
         // Cancel an existing timeout.
         cancelHostTimeout();
@@ -374,11 +394,13 @@ function unstable_scheduleCallback(priorityLevel, callback, options) {
         isHostTimeoutScheduled = true;
       }
       // Schedule a timeout.
+      // 延迟任务
       requestHostTimeout(handleTimeout, startTime - currentTime);
     }
   } else {
     newTask.sortIndex = expirationTime;
     // taskQueue === []
+    // 插入任务 taskQueue
     push(taskQueue, newTask);
     if (enableProfiling) {
       markTaskStart(newTask, currentTime);
@@ -389,6 +411,7 @@ function unstable_scheduleCallback(priorityLevel, callback, options) {
     // init true
     if (!isHostCallbackScheduled && !isPerformingWork) {
       isHostCallbackScheduled = true;
+      // 开始循环任务执行
       requestHostCallback(flushWork);
     }
   }
@@ -543,7 +566,7 @@ const performWorkUntilDeadline = () => {
       if (hasMoreWork) {
         // If there's more work, schedule the next message event at the end
         // of the preceding one.
-         //发送 MessageChannel 宏任务
+         //发送 MessageChannel 宏任务，继续循环任务执行
         schedulePerformWorkUntilDeadline();
       } else {
         isMessageLoopRunning = false;
