@@ -439,6 +439,7 @@ export function renderWithHooks<Props, SecondArg>(
         : HooksDispatcherOnUpdate;
   }
   // secondArg === context
+  // 如果使用 forwardRef , secondArg === ref
   let children = Component(props, secondArg);
 
   // Check if there was a render phase update
@@ -1599,6 +1600,7 @@ function rerenderState<S>(
   return rerenderReducer(basicStateReducer, (initialState: any));
 }
 // useEffect(create , deps)
+//第一次执行 create 还没有返回 destroy
 function pushEffect(tag, create, destroy, deps) {
   const effect: Effect = {
     tag, // HasEffect
@@ -1759,6 +1761,7 @@ function updateEffectImpl(fiberFlags, hookFlags, create, deps): void {
     if (nextDeps !== null) {
       const prevDeps = prevEffect.deps;
       if (areHookInputsEqual(nextDeps, prevDeps)) {
+        //如果不需要执行 effect， 设置的 hook tag 没有 HookHasEffect
         hook.memoizedState = pushEffect(hookFlags, create, destroy, nextDeps);
         return;
       }
@@ -1992,6 +1995,7 @@ function mountMemo<T>(
 ): T {
   const hook = mountWorkInProgressHook();
   const nextDeps = deps === undefined ? null : deps;
+  // 第一次，都会计算 memo value
   const nextValue = nextCreate();
   hook.memoizedState = [nextValue, nextDeps];
   return nextValue;

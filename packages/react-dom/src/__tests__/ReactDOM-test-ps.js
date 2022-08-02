@@ -126,23 +126,21 @@ describe('ReactDOM', () => {
         </TestContext.Provider>
       );
     }
+
+    function Child1() {
+      const [sb, setSb] = React.useState(1);
+      return (
+        <h1>
+          {sb}
+        </h1>
+      );
+    }
+    function Child2(props) {
+      return <h2>{props.sb}</h2>;
+    }
     function Parent() {
       const [sb, setSb] = React.useState(1);
       const sbsb = React.useMemo(() => sb * sb, [sb]);
-      // const [state, dispatch] = React.useReducer(
-      //   (state, action) => {
-      //     switch (action.type) {
-      //       case 'dc':
-      //         return {count: state.count + 1};
-      //       case 'd':
-      //         return {count: state.count - 1};
-      //       default:
-      //         throw new Error();
-      //     }
-      //   },
-      //   {count: 1000},
-      // );
-
       React.useEffect(() => {
         console.log('Parent log useEffect', sb);
         return () => {
@@ -155,8 +153,12 @@ describe('ReactDOM', () => {
       }, [sbsb]);
 
       React.useLayoutEffect(() => {
-        console.log('Parent layout');
+        console.log('Parent useLayoutEffect');
+        return () => {
+          console.log('Parent useLayoutEffect cb');
+        };
       });
+
       return (
         <div
           ref={buttonRef}
@@ -167,16 +169,11 @@ describe('ReactDOM', () => {
           onClick={event => {
             event.preventDefault();
             setSb(pre => pre + 1);
-            // setSb1(setSb1 => setSb1 + 1);
-            // dispatch({
-            //   type: 'dc',
-            // });
             cb();
           }}>
-          <p>{sbsb}</p>
-          {[1, 3].includes(sb) && <span>{sb}</span>}
-          <div>{sbsb}</div>
-          {[2].includes(sb) && <Ch1 />}
+          <Child1/>
+
+          <Child2 sb={sb}/>
         </div>
       );
     }
@@ -187,10 +184,10 @@ describe('ReactDOM', () => {
     buttonRef.current.dispatchEvent(
       new Event('click', {bubbles: true, cancelable: true}),
     );
-    buttonRef1.current.dispatchEvent(
+    buttonRef.current.dispatchEvent(
       new Event('click', {bubbles: true, cancelable: true}),
     );
-    buttonRef2.current.dispatchEvent(
+    buttonRef.current.dispatchEvent(
       new Event('click', {bubbles: true, cancelable: true}),
     );
     // buttonRef.current.dispatchEvent(

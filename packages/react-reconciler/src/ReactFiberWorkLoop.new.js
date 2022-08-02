@@ -2155,6 +2155,7 @@ function commitRootImpl(
     // no more pending effects.
     // TODO: Might be better if `flushPassiveEffects` did not automatically
     // flush synchronous work at the end, to avoid factoring hazards like this.
+    // init 的时候不会执行 因为没有 设置 rootWithPendingPassiveEffects
     flushPassiveEffects();
   } while (rootWithPendingPassiveEffects !== null);
   // 刷新 warnings
@@ -2318,10 +2319,15 @@ function commitRootImpl(
     // The next phase is the mutation phase, where we mutate the host tree.
     // 更新 html , 用fiber 创建 或者 update 对应的 html
     //深度优先遍历 fiber
+    // 1. 删除: fiber 执行 ref.current = null ,  从parent html 删除 html ,断开 fiber之间的 return
+    // 2.  // 执行 useLayoutEffect destory
+    //3. 更新：如果props 修改会设置 markUpdate() : Update ， 更新 html text： textHtml.nodeValue = newText
+    // 插入 或者 更新 html ，
     commitMutationEffects(root, finishedWork, lanes);
 
     if (enableCreateEventHandleAPI) {
       if (shouldFireAfterActiveInstanceBlur) {
+        // 发送 afterblur
         afterActiveInstanceBlur();
       }
     }
@@ -2347,7 +2353,7 @@ function commitRootImpl(
     if (enableSchedulingProfiler) { // log
       markLayoutEffectsStarted(lanes);
     }
-    // layout 修改 , ref 设置
+    // 完成html 修改之后，执行 uselayout 修改 , ref 设置
     commitLayoutEffects(finishedWork, root, lanes);
     if (__DEV__) {
       if (enableDebugTracing) {
@@ -2525,7 +2531,7 @@ function releaseRootPooledCache(root: FiberRoot, remainingLanes: Lanes) {
     }
   }
 }
-
+// jest 环境的 flushPassiveEffects 执行有问题，应该在 commitRoot 之后执行 scheduleCallback()
 export function flushPassiveEffects(): boolean {
   // Returns whether passive effects were flushed.
   // TODO: Combine this check with the one in flushPassiveEFfectsImpl. We should
@@ -2574,6 +2580,7 @@ export function enqueuePendingPassiveProfilerEffect(fiber: Fiber): void {
     pendingPassiveProfilerEffects.push(fiber);
     if (!rootDoesHavePassiveEffects) {
       rootDoesHavePassiveEffects = true;
+      // NormalSchedulerPriority === NormalPriority
       scheduleCallback(NormalSchedulerPriority, () => {
         flushPassiveEffects();
         return null;
@@ -2619,8 +2626,11 @@ function flushPassiveEffectsImpl() {
   const prevExecutionContext = executionContext;
   executionContext |= CommitContext;
   // root.current === FiberHost
+  // 1. 对删除的fiber 执行 useEffect destory
+  // 2. 回收删除的 fiber 的内存 fiber === null
+  // 3. 执行 useEffect destory
   commitPassiveUnmountEffects(root.current);
-  // 运行 useEffect(create fun)
+  // 1. 运行 useEffect(create fun)
   commitPassiveMountEffects(root, root.current, lanes, transitions);
 
   // TODO: Move to commitPassiveMountEffects
@@ -3263,15 +3273,18 @@ function scheduleCallback(priorityLevel, callback) {
   if (__DEV__) {
     // If we're currently inside an `act` scope, bypass Scheduler and push to
     // the `act` queue instead.
+    // 测试使用，act()
     const actQueue = ReactCurrentActQueue.current;
     if (actQueue !== null) {
       actQueue.push(callback);
       return fakeActCallbackNode;
     } else {
+      // prod 和 dev html 环境使用
       return Scheduler_scheduleCallback(priorityLevel, callback);
     }
   } else {
     // In production, always call Scheduler. This function will be stripped out.
+      // prod 和 dev html 环境使用
     return Scheduler_scheduleCallback(priorityLevel, callback);
   }
 }

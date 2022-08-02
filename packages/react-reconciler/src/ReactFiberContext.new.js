@@ -55,7 +55,7 @@ function getUnmaskedContext(
       // previous (parent) context instead for a context provider.
       return previousContext;
     }
-    return contextStackCursor.current;
+    return contextStackCursor.current; // init in pushTopLevelContextObject() ===  {}
   }
 }
 
@@ -167,8 +167,8 @@ function pushTopLevelContextObject(
       );
     }
 
-    push(contextStackCursor, context, fiber);
-    push(didPerformWorkStackCursor, didChange, fiber);
+    push(contextStackCursor, context, fiber); //init context == {}
+    push(didPerformWorkStackCursor, didChange, fiber); //inti didChange === false
   }
 }
 
