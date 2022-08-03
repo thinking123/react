@@ -140,18 +140,21 @@ describe('ReactDOM', () => {
     }
     function Parent() {
       const [sb, setSb] = React.useState(1);
+      const [q, setQ] = React.useState("");
       const [isPending, startTransition] = React.useTransition();
 
       return (
         <div
           ref={buttonRef}
           onClickCapture={event => {
+            setQ("sdlfkjl")
             startTransition(() => {
               setSb(pre => pre + 1);
             });
           }}>
           {isPending && <span>loading</span>}
           <div>{sb}</div>
+          <p>{q}</p>
         </div>
       );
     }
@@ -159,9 +162,10 @@ describe('ReactDOM', () => {
     document.body.appendChild(container);
     document.body.appendChild(portal);
 
-    ReactDOM.render(<Parent />, container);
+    const render = ReactDOM.createRoot(container);
+    render(<Parent />);
     // act(() => {
-      buttonRef.current.dispatchEvent(
+    buttonRef.current.dispatchEvent(
       new Event('click', {bubbles: true, cancelable: true}),
     );
     // });
