@@ -804,9 +804,12 @@ function updateOffscreenComponent(
         }
       }
     }
+    // subtreeRenderLanesCursor
+    // subtreeRenderLanes =  mergeLanes(subtreeRenderLanes, lanes)
     pushRenderLanes(workInProgress, subtreeRenderLanes);
   }
 
+  // nextChildren = {type:{_init ,payload ,$$typeof===lazy}}
   reconcileChildren(current, workInProgress, nextChildren, renderLanes);
   return workInProgress.child;
 }
@@ -2005,6 +2008,7 @@ function updateSuspenseComponent(current, workInProgress, renderLanes) {
     }
   }
 
+  //  suspenseStackCursor default === DefaultSuspenseContext === 0
   let suspenseContext: SuspenseContext = suspenseStackCursor.current;
 
   let showFallback = false;
@@ -2327,6 +2331,8 @@ function mountSuspensePrimaryChildren(
     mode,
     renderLanes,
   );
+  // suspense.child = OffscreenComponent
+  // OffscreenComponent.child = lazyComponent
   primaryChildFragment.return = workInProgress;
   workInProgress.child = primaryChildFragment;
   return primaryChildFragment;
@@ -2389,6 +2395,8 @@ function mountSuspenseFallbackChildren(
     );
   }
 
+  // 设置 suspend.child = offsceen
+  //  offsceen.sibling = failbackFiber
   primaryChildFragment.return = workInProgress;
   fallbackChildFragment.return = workInProgress;
   primaryChildFragment.sibling = fallbackChildFragment;
@@ -3200,6 +3208,9 @@ function updatePortalComponent(
     // flow doesn't do during mount. This doesn't happen at the root because
     // the root always starts with a "current" with a null child.
     // TODO: Consider unifying this with how the root works.
+    // reconcileChildFibers shouldTrackSideEffects == true
+    // portal 的 child flags = |= _ReactFiberFlags.Placement
+    // 在 commit 的时候会插入到portal html
     workInProgress.child = reconcileChildFibers(
       workInProgress,
       null,

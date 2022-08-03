@@ -32,12 +32,14 @@ describe('ReactDOM', () => {
 
   it('should bubble onSubmit', async () => {
     const container = document.createElement('div');
+    const portal = document.createElement('p');
     // debugger;
     let res;
     // let count = 0;
     let buttonRef = React.createRef();
     let buttonRef1 = React.createRef();
     let buttonRef2 = React.createRef();
+    let buttonRef11 = React.createRef();
 
     const TestContext = React.createContext({
       tv: 1,
@@ -129,51 +131,46 @@ describe('ReactDOM', () => {
       );
     }
 
-    function Child1() {
+    function Child1(props) {
       const [sb, setSb] = React.useState(1);
-      return <h1>{sb}</h1>;
+      return <h1 ref={buttonRef11}>{props.sb}</h1>;
     }
     function Child2(props) {
-      return <h2>{props.sb}</h2>;
+      return ReactDOM.createPortal(props.children, portal);
     }
     function Parent() {
       const [sb, setSb] = React.useState(1);
-      const LazyComponent = React.lazy(() => {
-        return new Promise(res => {
-          res({
-            default: Child2,
-          });
-        });
-      });
+      const [isPending, startTransition] = React.useTransition();
 
       return (
         <div
           ref={buttonRef}
-          onClick={event => {
-            event.preventDefault();
-            setSb(pre => pre + 1);
+          onClickCapture={event => {
+            startTransition(() => {
+              setSb(pre => pre + 1);
+            });
           }}>
-          <Suspense fallback={<h1>Loading...</h1>}>
-            <LazyComponent sb={sb} />
-          </Suspense>
+          {isPending && <span>loading</span>}
+          <div>{sb}</div>
         </div>
       );
     }
 
     document.body.appendChild(container);
+    document.body.appendChild(portal);
 
     ReactDOM.render(<Parent />, container);
-    act(() => {
+    // act(() => {
       buttonRef.current.dispatchEvent(
-        new Event('click', {bubbles: true, cancelable: true}),
-      );
-    });
+      new Event('click', {bubbles: true, cancelable: true}),
+    );
+    // });
 
-    act(() => {
-      buttonRef.current.dispatchEvent(
-        new Event('click', {bubbles: true, cancelable: true}),
-      );
-    });
+    // act(() => {
+    // buttonRef.current.dispatchEvent(
+    //   new Event('click', {bubbles: true, cancelable: true}),
+    // );
+    // });
 
     // buttonRef.current.dispatchEvent(
     //   new Event('click', {bubbles: true, cancelable: true}),

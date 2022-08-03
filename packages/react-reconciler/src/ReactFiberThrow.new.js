@@ -410,6 +410,7 @@ function throwException(
   rootRenderLanes: Lanes,
 ) {
   // The source fiber did not complete.
+  // throw 的 fiber 还没有完成
   sourceFiber.flags |= Incomplete;
 
   if (enableUpdaterTracking) {

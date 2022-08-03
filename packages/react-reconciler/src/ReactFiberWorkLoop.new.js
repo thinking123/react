@@ -1635,7 +1635,7 @@ function handleError(root, thrownValue): void {
           typeof thrownValue.then === 'function'
         ) {
           const wakeable: Wakeable = (thrownValue: any);
-          markComponentSuspended(
+          markComponentSuspended( // log
             erroredWork,
             wakeable,
             workInProgressRootRenderLanes,
