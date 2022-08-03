@@ -163,8 +163,8 @@ describe('ReactDOM', () => {
     document.body.appendChild(container);
     document.body.appendChild(portal);
 
-    const render = Client.createRoot(container);
-    render(<Parent />);
+    const root = Client.createRoot(container);
+    root.render(<Parent />);
     // act(() => {
     buttonRef.current.dispatchEvent(
       new Event('click', {bubbles: true, cancelable: true}),
