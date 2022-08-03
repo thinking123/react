@@ -16,13 +16,14 @@ let ReactDOMClient;
 let Scheduler;
 let act;
 let Suspense;
-
+let Client
 // debugger;
 describe('ReactDOM', () => {
   beforeEach(() => {
     jest.resetModules();
     React = require('react');
     ReactDOM = require('react-dom');
+    Client = require('react-dom/client');
     Scheduler = require('scheduler');
     act = require('jest-react').act;
     Suspense = require('react').Suspense;
@@ -162,7 +163,7 @@ describe('ReactDOM', () => {
     document.body.appendChild(container);
     document.body.appendChild(portal);
 
-    const render = ReactDOM.createRoot(container);
+    const render = Client.createRoot(container);
     render(<Parent />);
     // act(() => {
     buttonRef.current.dispatchEvent(
