@@ -16,7 +16,7 @@ let ReactDOMClient;
 let Scheduler;
 let act;
 let Suspense;
-let Client
+let Client;
 // debugger;
 describe('ReactDOM', () => {
   beforeEach(() => {
@@ -141,14 +141,14 @@ describe('ReactDOM', () => {
     }
     function Parent() {
       const [sb, setSb] = React.useState(1);
-      const [q, setQ] = React.useState("");
+      const [q, setQ] = React.useState('');
       const [isPending, startTransition] = React.useTransition();
 
       return (
         <div
           ref={buttonRef}
           onClickCapture={event => {
-            setQ("sdlfkjl")
+            setQ('sdlfkjl');
             startTransition(() => {
               setSb(pre => pre + 1);
             });
@@ -164,12 +164,14 @@ describe('ReactDOM', () => {
     document.body.appendChild(portal);
 
     const root = Client.createRoot(container);
-    root.render(<Parent />);
-    // act(() => {
-    buttonRef.current.dispatchEvent(
-      new Event('click', {bubbles: true, cancelable: true}),
-    );
-    // });
+    act(() => {
+      root.render(<Parent />);
+    });
+    act(() => {
+      buttonRef.current.dispatchEvent(
+        new Event('click', {bubbles: true, cancelable: true}),
+      );
+    });
 
     // act(() => {
     // buttonRef.current.dispatchEvent(
