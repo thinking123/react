@@ -253,7 +253,7 @@ function workLoop(hasTimeRemaining, initialTime) {
   }
   // Return whether there's additional work
   if (currentTask !== null) {
-    // 继续下一个宏任务执行 task
+    // 继续下一个宏任务执行 task , 如果超过了时间 5s ，但是还有任务，推送到下一个宏任务执行（Task）
     return true;
   } else {
     const firstTimer = peek(timerQueue);

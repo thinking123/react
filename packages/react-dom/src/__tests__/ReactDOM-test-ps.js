@@ -41,7 +41,8 @@ describe('ReactDOM', () => {
     let buttonRef1 = React.createRef();
     let buttonRef2 = React.createRef();
     let buttonRef11 = React.createRef();
-
+    let inputRef = React.createRef();
+    let i = 0;
     const TestContext = React.createContext({
       tv: 1,
     });
@@ -132,30 +133,58 @@ describe('ReactDOM', () => {
       );
     }
 
+    let setSb1;
+    let setSb2;
     function Child1(props) {
       const [sb, setSb] = React.useState(1);
-      return <h1 ref={buttonRef11}>{props.sb}</h1>;
+      setSb1 = setSb;
+      return (
+        <h1 ref={buttonRef11}>
+          <Child3 />
+        </h1>
+      );
     }
     function Child2(props) {
-      return ReactDOM.createPortal(props.children, portal);
+      const [sb, setSb] = React.useState(1);
+      setSb2 = setSb;
+      return (
+        <h2 ref={buttonRef11}>
+          <Child4 />
+        </h2>
+      );
+    }
+
+    function Child3(props) {
+      return <h3 ref={buttonRef11}>sdfsf</h3>;
+    }
+
+    function Child4(props) {
+      return <p ref={buttonRef11}>sdfsf</p>;
+    }
+
+    function App(props) {
+      return <div ref={buttonRef11}>app</div>;
+    }
+
+    function Text({text}) {
+      if (i === 0) {
+        Scheduler.unstable_yieldValue(text);
+      }
+      return <Child1 sb="sbsdsd" />;
     }
     function Parent() {
       const [sb, setSb] = React.useState(1);
-      const [q, setQ] = React.useState('');
-      const [isPending, startTransition] = React.useTransition();
-
+      // const deferredQuery = React.useDeferredValue(sb);
       return (
         <div
           ref={buttonRef}
-          onClickCapture={event => {
-            setQ('sdlfkjl');
-            startTransition(() => {
-              setSb(pre => pre + 1);
-            });
+          onClick={event => {
+            setSb1(pre => pre + 1);
+            setSb2(pre => pre + 1);
           }}>
-          {isPending && <span>loading</span>}
-          <div>{sb}</div>
-          <p>{q}</p>
+          <Child1 />
+          <Child2 />
+          <App />
         </div>
       );
     }
@@ -164,14 +193,61 @@ describe('ReactDOM', () => {
     document.body.appendChild(portal);
 
     const root = Client.createRoot(container);
-    act(() => {
+    // const setUntrackedInputValue = Object.getOwnPropertyDescriptor(
+    //   HTMLInputElement.prototype,
+    //   'value',
+    // ).set;
+    await act(() => {
       root.render(<Parent />);
     });
-    act(() => {
+
+    await act(() => {
       buttonRef.current.dispatchEvent(
         new Event('click', {bubbles: true, cancelable: true}),
       );
     });
+    // await act(() => {
+    //   buttonRef.current.dispatchEvent(
+    //     new Event('click', {bubbles: true, cancelable: true}),
+    //   );
+    // });
+    // await act(() => {
+    //   buttonRef.current.dispatchEvent(
+    //     new Event('click', {bubbles: true, cancelable: true}),
+    //   );
+    // });
+    // // await act(() => {});
+
+    Scheduler.unstable_flushAll();
+    Scheduler.unstable_flushAll();
+
+    //   // inputRef.current.dispatchEvent(
+    //   //   new Event('input', {
+    //   //     bubbles: false,
+    //   //   }),
+    //   // );
+    //   // const elem =  inputRef.current
+
+    //   // const inputEvent = new Event('input', {
+    //   //   bubbles: true,
+    //   // });
+    //   // setUntrackedInputValue.call(elem, "sfsdfsdf");
+    //   // elem.dispatchEvent(inputEvent);
+
+    // });
+
+    // Scheduler.unstable_clearYields();
+    // Scheduler.unstable_flushNumberOfYields(1);
+    // i = 1;
+    // Scheduler.unstable_clearYields();
+    // await act(() => {
+    //   buttonRef.current.dispatchEvent(
+    //     new Event('click', {bubbles: true, cancelable: true}),
+    //   );
+    // });
+    // Scheduler.unstable_flushNumberOfYields(1);
+    // await act(() => {})
+    // await act(() => {})
 
     // act(() => {
     // buttonRef.current.dispatchEvent(
@@ -208,7 +284,7 @@ describe('ReactDOM', () => {
 
       setTimeout(() => {
         _res();
-      });
+      }, 1000 * 20);
     });
 
     // return '';

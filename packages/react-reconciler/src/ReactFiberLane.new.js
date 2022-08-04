@@ -500,11 +500,14 @@ export function includesExpiredLane(root: FiberRoot, lanes: Lanes) {
 export function isTransitionLane(lane: Lane) {
   return (lane & TransitionLanes) !== NoLanes;
 }
-
+// 获取下一个 transition lane
 export function claimNextTransitionLane(): Lane {
   // Cycle through the lanes, assigning each new transition to the next lane.
   // In most cases, this means every transition gets its own lane, until we
   // run out of lanes and cycle back to the beginning.
+  //init nextTransitionLane = TransitionLane1 = 64
+  // 1111111111111111000000 === TransitionLanes
+  //               10000000 === TransitionLane1
   const lane = nextTransitionLane;
   nextTransitionLane <<= 1;
   if ((nextTransitionLane & TransitionLanes) === NoLanes) {
@@ -595,6 +598,8 @@ export function markRootUpdated(
   eventTime: number,
 ) {
   // 有更新设置 pendingLanes
+  // 使用了 useTransition 和 useState
+  // pendingLanes === 1000001 === 64 | 1
   root.pendingLanes |= updateLane;
 
   // If there are any suspended transitions, it's possible this new update
@@ -686,7 +691,7 @@ export function markRootFinished(root: FiberRoot, remainingLanes: Lanes) {
     lanes &= ~lane;
   }
 }
-
+// 设置root 的纠缠lane
 export function markRootEntangled(root: FiberRoot, entangledLanes: Lanes) {
   // In addition to entangling each of the given lanes with each other, we also
   // have to consider _transitive_ entanglements. For each lane that is already

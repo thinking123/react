@@ -524,7 +524,7 @@ function unstable_flushExpired() {
     }
   }
 }
-
+// 刷新 任务
 function unstable_flushAllWithoutAsserting(): boolean {
   // Returns false if no work was flushed.
   if (isFlushing) {
@@ -575,7 +575,7 @@ function unstable_flushAll(): void {
     );
   }
 }
-
+//  设置 shouldYieldToHost 返回 true ，不执行render
 function unstable_yieldValue(value: mixed): void {
   // eslint-disable-next-line react-internal/no-production-logging
   if (console.log.name === 'disabledLog' || disableYieldValue) {

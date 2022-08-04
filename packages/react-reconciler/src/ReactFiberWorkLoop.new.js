@@ -697,6 +697,8 @@ function markUpdateLaneFromFiberToRoot(
 ): FiberRoot | null {
   // Update the source fiber's lanes
   // 设置 fiber lanes ： 合并lanes , SyncLane | NoLane
+  // 使用了 useTransition 和 useState
+  // sourceFiber.lanes === 1000001 === 64 | 1
   sourceFiber.lanes = mergeLanes(sourceFiber.lanes, lane);
   let alternate = sourceFiber.alternate;
   if (alternate !== null) {
@@ -745,6 +747,9 @@ export function isInterleavedUpdate(fiber: Fiber, lane: Lane) {
     // TODO: Optimize slightly by comparing to root that fiber belongs to.
     // Requires some refactoring. Not a big deal though since it's rare for
     // concurrent apps to have more than a single root.
+    // 如果之前有一个task（低优先级的，被中断了task）
+    // workInProgressRoot 是低优先级的root ，这个时候又有更新进来
+    // 所以是交叉更新 , workInProgressRoot !== null
     (workInProgressRoot !== null ||
       // If the interleaved updates queue hasn't been cleared yet, then
       // we should treat this as an interleaved update, too. This is also a
@@ -959,6 +964,7 @@ function performConcurrentWorkOnRoot(root, didTimeout) {
   const shouldTimeSlice =
     !includesBlockingLane(root, lanes) &&
     !includesExpiredLane(root, lanes) &&
+    // act wrap function (disableSchedulerTimeoutInWorkLoop || !didTimeout) === true
     (disableSchedulerTimeoutInWorkLoop || !didTimeout);
   let exitStatus = shouldTimeSlice
     ? renderRootConcurrent(root, lanes)
@@ -1041,6 +1047,8 @@ function performConcurrentWorkOnRoot(root, didTimeout) {
   if (root.callbackNode === originalCallbackNode) {
     // The task node scheduled for this root is the same one that's
     // currently executed. Need to return a continuation.
+    // 当前任务没有执行完成，需要返回给  task , continuationCallback
+    // task 会在一个宏任务能执行,重新执行
     return performConcurrentWorkOnRoot.bind(null, root);
   }
   return null;
@@ -1944,6 +1952,7 @@ function renderRootConcurrent(root: FiberRoot, lanes: Lanes) {
   }
 
   // Check if the tree has completed.
+  // concurrent 运行时间超过 5 ms ，退出
   if (workInProgress !== null) {
     // Still work remaining.
     if (enableSchedulingProfiler) {
@@ -1968,6 +1977,7 @@ function renderRootConcurrent(root: FiberRoot, lanes: Lanes) {
 /** @noinline */
 function workLoopConcurrent() {
   // Perform work until Scheduler asks us to yield
+  // todo shouldYield
   while (workInProgress !== null && !shouldYield()) {
     performUnitOfWork(workInProgress);
   }

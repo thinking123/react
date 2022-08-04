@@ -562,6 +562,15 @@ shared:{
       }
     }
   }
+  /*
+   从workInProgress.updateQueue.shared.pending === pending === pendingQueue
+
+   cp current.updateQueue.firstBaseUpdate = pending
+   cp current.updateQueue.lastBaseUpdate = pending
+   cp firstBaseUpdate = pending
+   cp lastBaseUpdate = pending
+
+  */
 
   // These values may change as we process the queue.
   if (firstBaseUpdate !== null) { // firstBaseUpdate === pending === queue.shared.pending === {palyload:{element:App}}
