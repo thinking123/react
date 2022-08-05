@@ -104,7 +104,7 @@ const scriptReplacer = (match, prefix, s, suffix) =>
   `${prefix}${s === 's' ? '\\u0073' : '\\u0053'}${suffix}`;
 
 // Allows us to keep track of what we've already written so we can refer back to it.
-export function createResponseState(
+export function createResponseState( // 参数 === undefined
   identifierPrefix: string | void,
   nonce: string | void,
   bootstrapScriptContent: string | void,
@@ -114,7 +114,7 @@ export function createResponseState(
   const idPrefix = identifierPrefix === undefined ? '' : identifierPrefix;
   const inlineScriptWithNonce =
     nonce === undefined
-      ? startInlineScript
+      ? startInlineScript // <scipt>
       : stringToPrecomputedChunk(
           '<script nonce="' + escapeTextForBrowser(nonce) + '">',
         );
@@ -147,7 +147,7 @@ export function createResponseState(
   return {
     bootstrapChunks: bootstrapChunks,
     startInlineScript: inlineScriptWithNonce,
-    placeholderPrefix: stringToPrecomputedChunk(idPrefix + 'P:'),
+    placeholderPrefix: stringToPrecomputedChunk(idPrefix + 'P:'), // stringToPrecomputedChunk = str => str
     segmentPrefix: stringToPrecomputedChunk(idPrefix + 'S:'),
     boundaryPrefix: idPrefix + 'B:',
     idPrefix: idPrefix,

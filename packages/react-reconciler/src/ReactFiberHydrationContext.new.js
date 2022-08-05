@@ -117,9 +117,11 @@ function enterHydrationState(fiber: Fiber): boolean {
   }
 
   const parentInstance: Container = fiber.stateNode.containerInfo;
+  // 从 container 获取第一个 child (hydrat 的时候 已经插入了完整的html)
   nextHydratableInstance = getFirstHydratableChildWithinContainer(
     parentInstance,
   );
+  // 设置 hydrationParentFiber ， isHydrating
   hydrationParentFiber = fiber;
   isHydrating = true;
   hydrationErrors = null;
@@ -325,7 +327,7 @@ function insertNonHydratedInstance(returnFiber: Fiber, fiber: Fiber) {
   fiber.flags = (fiber.flags & ~Hydrating) | Placement;
   warnNonhydratedInstance(returnFiber, fiber);
 }
-
+// 连接 hydrate html 和 fiber 对应的type stateNode
 function tryHydrate(fiber, nextInstance) {
   switch (fiber.tag) {
     case HostComponent: {
@@ -333,8 +335,10 @@ function tryHydrate(fiber, nextInstance) {
       const props = fiber.pendingProps;
       const instance = canHydrateInstance(nextInstance, type, props);
       if (instance !== null) {
+        //设置 fiber.stateNode =  hydrate html === instance , hydrate 已经插入html
         fiber.stateNode = (instance: Instance);
         hydrationParentFiber = fiber;
+        // 获取下一个 html 深度优先，广度
         nextHydratableInstance = getFirstHydratableChild(instance);
         return true;
       }

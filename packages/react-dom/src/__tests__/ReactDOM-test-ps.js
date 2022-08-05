@@ -17,6 +17,7 @@ let Scheduler;
 let act;
 let Suspense;
 let Client;
+let ReactDOMServer;
 // debugger;
 describe('ReactDOM', () => {
   beforeEach(() => {
@@ -24,6 +25,7 @@ describe('ReactDOM', () => {
     React = require('react');
     ReactDOM = require('react-dom');
     Client = require('react-dom/client');
+    ReactDOMServer = require('react-dom/server');
     Scheduler = require('scheduler');
     act = require('jest-react').act;
     Suspense = require('react').Suspense;
@@ -179,28 +181,34 @@ describe('ReactDOM', () => {
         <div
           ref={buttonRef}
           onClick={event => {
-            setSb1(pre => pre + 1);
-            setSb2(pre => pre + 1);
+            setSb(pre => pre + 1);
           }}>
-          <Child1 />
-          <Child2 />
-          <App />
+          {sb}
+          <Child3 />
         </div>
       );
     }
 
     document.body.appendChild(container);
-    document.body.appendChild(portal);
+    // document.body.appendChild(portal);
 
-    const root = Client.createRoot(container);
+    // const root = Client.createRoot(container);
+
+    // const html = ReactDOMServer.renderToString(<Parent />);
+    // container.innerHTML = html;
+    container.innerHTML = '<div>1<h3>sdfsf</h3></div>';
+
     // const setUntrackedInputValue = Object.getOwnPropertyDescriptor(
     //   HTMLInputElement.prototype,
     //   'value',
     // ).set;
-    await act(() => {
-      root.render(<Parent />);
-    });
+    // await act(() => {
+    //   root.render(<Parent />);
+    // });
 
+    await act(() => {
+      Client.hydrateRoot(container, <Parent />);
+    });
     await act(() => {
       buttonRef.current.dispatchEvent(
         new Event('click', {bubbles: true, cancelable: true}),

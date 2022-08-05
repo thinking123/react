@@ -47,6 +47,30 @@ export function createResponseState(
   generateStaticMarkup: boolean,
   identifierPrefix: string | void,
 ): ResponseState {
+  /*
+responseState ===
+
+    bootstrapChunks:
+    (0) []
+    boundaryPrefix:
+    'B:'
+    idPrefix:
+    ''
+    nextSuspenseID:
+    0
+    placeholderPrefix:
+    'P:'
+    segmentPrefix:
+    'S:'
+    sentClientRenderFunction:
+    false
+    sentCompleteBoundaryFunction:
+    false
+    sentCompleteSegmentFunction:
+    false
+    startInlineScript:
+
+  */
   const responseState = createResponseStateImpl(identifierPrefix, undefined);
   return {
     // Keep this in sync with ReactDOMServerFormatConfig

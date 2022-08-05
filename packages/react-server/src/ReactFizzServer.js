@@ -231,7 +231,14 @@ function noop(): void {}
 
 export function createRequest(
   children: ReactNodeList,
+  /*
+'{"bootstrapChunks":[],"startInlineScript":"<script>","placeholderPrefix":"P:","segmentPrefix":"S:","boundaryPrefix":"B:","idPrefix":"","nextSuspenseID":0,"sentCompleteSegmentFunction":false,"sentCompleteBoundaryFunction":false,"sentClientRenderFunction":false,"generateStaticMarkup":false}'
+  */
   responseState: ResponseState,
+  /*
+insertionMode:1
+selectedValue:null
+  */
   rootFormatContext: FormatContext,
   progressiveChunkSize: void | number,
   onError: void | ((error: mixed) => void),
