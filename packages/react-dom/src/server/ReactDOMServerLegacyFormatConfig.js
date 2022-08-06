@@ -44,8 +44,8 @@ export type ResponseState = {
 };
 
 export function createResponseState(
-  generateStaticMarkup: boolean,
-  identifierPrefix: string | void,
+  generateStaticMarkup: boolean, // init false
+  identifierPrefix: string | void, // init undefined
 ): ResponseState {
   /*
 responseState ===

@@ -32,7 +32,7 @@ function onError() {
 }
 
 function renderToStringImpl(
-  children: ReactNodeList,
+  children: ReactNodeList,// <App/>
   options: void | ServerOptions,
   generateStaticMarkup: boolean,
 ): string {

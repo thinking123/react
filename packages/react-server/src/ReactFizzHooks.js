@@ -170,6 +170,7 @@ function createWorkInProgressHook(): Hook {
 }
 
 export function prepareToUseHooks(task: Task, componentIdentity: Object): void {
+  //componentIdentity === {}
   currentlyRenderingComponent = componentIdentity;
   currentlyRenderingTask = task;
   if (__DEV__) {
@@ -552,7 +553,7 @@ export const Dispatcher: DispatcherType = {
   // useImperativeHandle is not run in the server environment
   useImperativeHandle: noop,
   // Effects are not run in the server environment.
-  useEffect: noop,
+  useEffect: noop, // useEffect === noop, server
   // Debugging effect
   useDebugValue: noop,
   useDeferredValue,

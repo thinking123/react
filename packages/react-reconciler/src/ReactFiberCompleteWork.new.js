@@ -779,6 +779,7 @@ function completeWork(
   // to the current tree provider fiber is just as fast and less error-prone.
   // Ideally we would have a special version of the work loop only
   // for hydration.
+  // hydrate 计算children array 的fork id
   popTreeContext(workInProgress);
   switch (workInProgress.tag) {
     case IndeterminateComponent:

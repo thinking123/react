@@ -1442,6 +1442,7 @@ function updateHostComponent(
   pushHostContext(workInProgress);
 
   if (current === null) {
+    // hydrate html 和 fiber
     tryToClaimNextHydratableInstance(workInProgress);
   }
 
@@ -3555,6 +3556,7 @@ function attemptEarlyBailoutIfNoScheduledUpdate(
         const cache: Cache = current.memoizedState.cache;
         pushCacheProvider(workInProgress, cache);
       }
+      // 重新渲染 reset hydrate ,使用  client 渲染模式
       resetHydrationState();
       break;
     case HostComponent:
@@ -3819,6 +3821,7 @@ function beginWork(
     didReceiveUpdate = false;
       // getIsHydrating === false
     if (getIsHydrating() && isForkedChild(workInProgress)) {
+      // hydrate 计算 fork id
       // Check if this child belongs to a list of muliple children in
       // its parent.
       //

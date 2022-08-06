@@ -333,6 +333,7 @@ function tryHydrate(fiber, nextInstance) {
     case HostComponent: {
       const type = fiber.type;
       const props = fiber.pendingProps;
+      // 比较 element 对应的type 和 hydrate html 的 type
       const instance = canHydrateInstance(nextInstance, type, props);
       if (instance !== null) {
         //设置 fiber.stateNode =  hydrate html === instance , hydrate 已经插入html
@@ -407,6 +408,7 @@ function tryToClaimNextHydratableInstance(fiber: Fiber): void {
   if (!isHydrating) {
     return;
   }
+  // 当前 fiber 对应的 html
   let nextInstance = nextHydratableInstance;
   if (!nextInstance) {
     if (shouldClientRenderOnMismatch(fiber)) {
@@ -495,6 +497,7 @@ function prepareToHydrateHostTextInstance(fiber: Fiber): boolean {
     fiber,
     shouldWarnIfMismatchDev,
   );
+  // server 和 hydrate 之后的html 内容需要相等，否则抛出异常
   if (shouldUpdate) {
     // We assume that prepareToHydrateHostTextInstance is called in a context where the
     // hydration parent is the parent host component of this host text.
@@ -592,6 +595,7 @@ function popToNextHostParent(fiber: Fiber): void {
   ) {
     parent = parent.return;
   }
+  // 返回上一个 hydrate 对应的 fiber parent , HostComponent ,
   hydrationParentFiber = parent;
 }
 
@@ -640,6 +644,7 @@ function popHydrationState(fiber: Fiber): boolean {
   if (fiber.tag === SuspenseComponent) {
     nextHydratableInstance = skipPastDehydratedSuspenseInstance(fiber);
   } else {
+    // 返回下一个 hydrate 对应的 html sibling
     nextHydratableInstance = hydrationParentFiber
       ? getNextHydratableSibling(fiber.stateNode)
       : null;
