@@ -794,11 +794,11 @@ function emptyFindFiberByHostInstance(
 function getCurrentFiberForDevTools() {
   return ReactCurrentFiberCurrent;
 }
-
+// dev tools inject functions
 export function injectIntoDevTools(devToolsConfig: DevToolsConfig): boolean {
   const {findFiberByHostInstance} = devToolsConfig;
   const {ReactCurrentDispatcher} = ReactSharedInternals;
-
+  //
   return injectInternals({
     bundleType: devToolsConfig.bundleType,
     version: devToolsConfig.version,

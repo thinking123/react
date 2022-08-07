@@ -159,6 +159,8 @@ function canPreserveStateBetween(prevType, nextType) {
 
 function resolveFamily(type) {
   // Only check updated types to keep lookups fast.
+  // updatedFamiliesByType保存 key = oldtype, newType
+  // value === {current: newType}
   return updatedFamiliesByType.get(type);
 }
 
@@ -211,8 +213,10 @@ export function performReactRefresh(): RefreshUpdate | null {
     updates.forEach(([family, nextType]) => {
       // Now that we got a real edit, we can create associations
       // that will be read by the React reconciler.
+      // hrm old App
       const prevType = family.current;
       updatedFamiliesByType.set(prevType, family);
+      //nextType === hrm new App
       updatedFamiliesByType.set(nextType, family);
       family.current = nextType;
 
@@ -220,6 +224,7 @@ export function performReactRefresh(): RefreshUpdate | null {
       if (canPreserveStateBetween(prevType, nextType)) {
         updatedFamilies.add(family);
       } else {
+        //stale(陈旧)
         staleFamilies.add(family);
       }
     });
@@ -233,6 +238,8 @@ export function performReactRefresh(): RefreshUpdate | null {
     helpersByRendererID.forEach(helpers => {
       // Even if there are no roots, set the handler on first update.
       // This ensures that if *new* roots are mounted, they'll use the resolve handler.
+      // 设置 fiber 获取 type <App/> 的 function
+      //
       helpers.setRefreshHandler(resolveFamily);
     });
 
@@ -321,13 +328,19 @@ export function register(type: any, id: string): void {
     // Create family or remember to update it.
     // None of this bookkeeping affects reconciliation
     // until the first performReactRefresh() call above.
+    // id === string , type === <App/>
     let family = allFamiliesByID.get(id);
     if (family === undefined) {
+      // family 保存 <App/> === function
       family = {current: type};
+      //按照id 保存
       allFamiliesByID.set(id, family);
     } else {
+      // 保存需要hrm 的function
+      // family old {type } , hrm new type === type === <NewApp/>
       pendingUpdates.push([family, type]);
     }
+       //按照type 保存
     allFamiliesByType.set(type, family);
 
     // Visit inner types because we might not have registered them.
@@ -498,6 +511,8 @@ export function injectIntoGlobalHook(globalObject: any): void {
         typeof injected.setRefreshHandler === 'function'
       ) {
         // This version supports React Refresh.
+        // devtools 已经设置的injected {funtions} , funtions === 辅助函数:
+        // scheduleRefresh , helpersByRendererID ...
         helpersByRendererID.set(id, ((injected: any): RendererHelpers));
       }
       return id;
@@ -529,6 +544,7 @@ export function injectIntoGlobalHook(globalObject: any): void {
         // This includes intentionally scheduled unmounts.
         failedRoots.delete(root);
         if (rootElements !== null) {
+          // 保存fiber root 和 对应的 children ,刷新的时候需要使用 performReactRefresh
           rootElements.set(root, children);
         }
       }
@@ -572,6 +588,8 @@ export function injectIntoGlobalHook(globalObject: any): void {
             // Unmount an existing root.
             mountedRoots.delete(root);
             if (didError) {
+              // hrm 如果修了hooks 数量，错误 didError === true
+              // const didError = (root.current.flags & _ReactFiberFlags.DidCapture) === _ReactFiberFlags.DidCapture;
               // We'll remount it on future edits.
               failedRoots.add(root);
             } else {

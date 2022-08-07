@@ -37,7 +37,7 @@ function transform(input, options = {}) {
 }
 
 describe('ReactFreshBabelPlugin', () => {
-  it('registers top-level function declarations', () => {
+  it.only('registers top-level function declarations', () => {
     // Hello and Bar should be registered, handleClick shouldn't.
     expect(
       transform(`

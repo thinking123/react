@@ -1649,6 +1649,7 @@ function handleError(root, thrownValue): void {
             workInProgressRootRenderLanes,
           );
         } else {
+          // hrm 如果修改了hooks的数量，throw error
           markComponentErrored(
             erroredWork,
             thrownValue,

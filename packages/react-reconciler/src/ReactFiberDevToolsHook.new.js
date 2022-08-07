@@ -59,6 +59,7 @@ export function injectInternals(internals: Object): boolean {
     // No DevTools
     return false;
   }
+  // react fresh runtime 设置hook === __REACT_DEVTOOLS_GLOBAL_HOOK__
   const hook = __REACT_DEVTOOLS_GLOBAL_HOOK__;
   if (hook.isDisabled) {
     // This isn't a real property on the hook, but it can be set to opt out
@@ -88,7 +89,7 @@ export function injectInternals(internals: Object): boolean {
         injectProfilingHooks,
       };
     }
-
+    // react fresh runtime inject functions
     rendererID = hook.inject(internals);
 
     // We have successfully injected, so now it is safe to set up hooks.
@@ -107,7 +108,7 @@ export function injectInternals(internals: Object): boolean {
     return false;
   }
 }
-
+// hmr
 export function onScheduleRoot(root: FiberRoot, children: ReactNodeList) {
   if (__DEV__) {
     if (

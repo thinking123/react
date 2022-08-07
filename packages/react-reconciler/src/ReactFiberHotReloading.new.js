@@ -236,6 +236,8 @@ export const scheduleRefresh: ScheduleRefresh = (
       // Hot reloading is disabled.
       return;
     }
+    // updatedFamilies :需要更新的 type <App/>
+    // staleFamilies :需要重新挂载的 type <App/>
     const {staleFamilies, updatedFamilies} = update;
     flushPassiveEffects();
     flushSync(() => {
@@ -296,6 +298,7 @@ function scheduleFibersWithFamiliesRecursively(
     let needsRemount = false;
     if (candidateType !== null) {
       const family = resolveFamily(candidateType);
+      // newType 是否需要重新挂载 或者 更新
       if (family !== undefined) {
         if (staleFamilies.has(family)) {
           needsRemount = true;
@@ -321,6 +324,7 @@ function scheduleFibersWithFamiliesRecursively(
       fiber._debugNeedsRemount = true;
     }
     if (needsRemount || needsRender) {
+      //对需要更新或者挂载的fiber 设置 syncLane ，刷新
       scheduleUpdateOnFiber(fiber, SyncLane, NoTimestamp);
     }
     if (child !== null && !needsRemount) {

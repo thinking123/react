@@ -17,6 +17,34 @@
         "--",
         "./packages/react-dom/src/__tests__/ReactDOM-test-ps.js"
       ]
+    },
+    {
+      "name": "debug refresh react",
+      "program": "${workspaceFolder}/scripts/jest/jest-cli.js",
+      "request": "launch",
+      "skipFiles": [
+        "<node_internals>/**"
+      ],
+      "type": "pwa-node",
+      "args": [
+        "--debug",
+        "--",
+        "./packages/react-refresh/src/__tests__/ReactFresh-test-ps1.js"
+      ]
+    },
+    {
+      "name": "debug refresh react js",
+      "program": "${workspaceFolder}/scripts/jest/jest-cli.js",
+      "request": "launch",
+      "skipFiles": [
+        "<node_internals>/**"
+      ],
+      "type": "pwa-node",
+      "args": [
+        "--debug",
+        "--",
+        "./packages/react-refresh/src/__tests__/ReactFreshBabelPlugin-test-ps2.js"
+      ]
     }
   ]
 }
